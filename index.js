@@ -1,8 +1,8 @@
 const app = require('express')();
 const bodyParser = require('body-parser')
 
-const resourceRouter = require('./routes/resource');
-const folderRouter = require('./routes/folder');
+const resourceRouter = require('./server/routes/resource');
+const folderRouter = require('./server/routes/folder');
 
 app.use(bodyParser.json());
 

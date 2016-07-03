@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const db = require('../db');
+const db = require('../../db');
 
 router.get('/', (req, res) => {
   db.all('SELECT * FROM resource LIMIT 10', [], (err, rows) => {
