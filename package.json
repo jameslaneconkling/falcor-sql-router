@@ -7,6 +7,7 @@
     "dev": "ENV=dev node index.js",
     "prod": "node index.js",
     "initDB": "node lib/init_db.js",
+    "reinitDB": "rm ./db.sql && node lib/init_db.js",
     "seedDB": "node lib/seed/db.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
