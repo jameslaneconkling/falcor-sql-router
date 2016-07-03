@@ -1,9 +1,11 @@
 const app = require('express')();
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
 
 const resourceRouter = require('./server/routes/resource');
 const folderRouter = require('./server/routes/folder');
 
+app.use(morgan('combined'));
 app.use(bodyParser.json());
 
 app.use('/api/resource', resourceRouter);
