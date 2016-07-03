@@ -12,12 +12,13 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res, next) => {
   db.run(`INSERT INTO folder
-    (name, body)
+    (name, body, folderId)
     VALUES
-    ($name, $body)
+    ($name, $body, $folderId)
   `, {
     $name: req.body.name,
-    $body: req.body.body
+    $body: req.body.body,
+    $folderId: req.body.folderId
   }, function(err) {
     if (err) {
       console.error(err);

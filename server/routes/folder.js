@@ -12,12 +12,38 @@ router.get('/', (req, res, next) => {
   });
 });
 
+router.get('/:id', (req, res, next) => {
+  db.get('SELECT * FROM folder WHERE id = ?', [req.params.id], (err, row) => {
+    if (err) {
+      next(err);
+    }
+    res.status(200).send({
+      data: row
+    });
+  });
+});
+
+router.get('/:id/children', (req, res, next) => {
+  db.all('SELECT * FROM folder WHERE parentId = ?', [req.params.id], (err, rows) => {
+    if (err) {
+      next(err);
+    }
+    res.status(200).send({
+      data: rows
+    });
+  });
+});
+
 router.post('/', (req, res, next) => {
+  // TODO - prevent self-referencing folders
   db.run(`INSERT INTO folder
-    (name)
+    (name, parentId)
     VALUES
-    ($name)
-  `, {$name: req.body.name}, function(err) {
+    ($name, $parentId)
+  `, {
+    $name: req.body.name,
+    $parentId: req.body.parentId
+  }, function(err) {
     if (err) {
       next(err);
     }
