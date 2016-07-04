@@ -2,16 +2,22 @@ const app = require('express')();
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 
-const resourceRouter = require('./rest/routes/resource');
-const folderRouter = require('./rest/routes/folder');
-
+// Middleware
 app.use(morgan('combined'));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.text({ type: 'text/*' }));
 
-app.use('/api/resource', resourceRouter);
-app.use('/api/folder', folderRouter);
+// REST endpoints
+app.use('/api/resource', require('./rest/routes/resource'));
+app.use('/api/folder', require('./rest/routes/folder'));
 
+// Falcor endpoint
+app.use('/api/model.json', require('./falcor/server'));
+
+// Error handling
 app.use((err, req, res, next) => {
+  console.error('Error on:', req, err);
   res.status(500).send({
     name: err.name,
     message: err.message,
@@ -19,6 +25,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Boot
 app.listen(3000, () => {
   console.log('listening on port 3000');
 });
