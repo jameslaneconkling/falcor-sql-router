@@ -16,32 +16,33 @@ const BaseRouter = Router.createClass([
         db.all(`SELECT ${fields.join(', ')} FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
           if (err) {
             console.error(err);
-            return resolve({
+            return reject({
               path: ['foldersById'],
               value: $error(err.message)
             });
           }
 
-          const result = [];
-          ids.forEach((folderId, idx) => {
-            if (rows[idx]) {
-              // add fields to folder
-              fields.forEach(field => {
-                result.push({
-                  path: ['foldersById', folderId, field],
-                  value: rows[idx][field]
-                });
-              });
-            } else {
-              // folder at idx doesn't exist
-              result.push({
+          const pathValues = ids.reduce((pathValues, folderId) => {
+            const row = rows.find(row => row.id === folderId);
+
+            if (!row) {
+              // folderId doesn't exist
+              return pathValues.concat({
                 path: ['foldersById', folderId],
                 value: null
               });
             }
-          });
 
-          resolve(result);
+            // add fields to folder
+            return pathValues.concat(fields.map(field => {
+              return {
+                path: ['foldersById', folderId, field],
+                value: row[field]
+              };
+            }));
+          }, []);
+
+          resolve(pathValues);
         });
       });
     }
@@ -56,7 +57,7 @@ const BaseRouter = Router.createClass([
         db.all(`SELECT ${fields.join(', ')} FROM folder WHERE rowId IN (${indices.join(', ')})`, [], (err, rows) => {
           if (err) {
             console.error(err);
-            return resolve({
+            return reject({
               path: ['folderList'],
               value: $error(err.message)
             });
