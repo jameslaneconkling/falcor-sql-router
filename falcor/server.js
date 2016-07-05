@@ -1,50 +1,65 @@
 const FalcorServer = require('falcor-express');
 const Router = require('falcor-router');
-const db = require('../db');
 const falcor = require('falcor');
+const Rx = require('rx');
+const db = require('../db');
 const $ref = falcor.Model.ref;
 const $error = falcor.Model.error;
+
+const rxQuery = (query, ids) => {
+  return Rx.Observable.create(observer => {
+    db.all(query, [], (err, rows) => {
+      if (err) {
+        observer.onError(err);
+      } else {
+        ids.forEach(id => {
+          observer.onNext({
+            id: id,
+            row: rows.find(row => row.id === id)
+          });
+        });
+      }
+      observer.onCompleted();
+    });
+  });
+};
 
 const BaseRouter = Router.createClass([
   {
     route: "foldersById[{integers:ids}][{keys:fields}]",
     get(pathSet) {
-      return new Promise((resolve, reject) => {
-        const ids = pathSet.ids;
-        const fields = pathSet.fields;
 
-        db.all(`SELECT ${fields.join(', ')} FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
-          if (err) {
-            console.error(err);
-            return reject({
-              path: ['foldersById'],
-              value: $error(err.message)
+      const ids = pathSet.ids;
+      const fields = pathSet.fields;
+
+      return rxQuery(`SELECT ${fields.join(', ')} FROM folder WHERE id IN (${ids.join(', ')})`, ids)
+        .catch(err => {
+          console.error(err);
+          return Rx.Observable.throw({
+            path: ['foldersById'],
+            value: $error(err.message)
+          });
+        })
+        .reduce((pathValues, rowIdValue) => {
+          const folderId = rowIdValue.id;
+          const row = rowIdValue.row;
+
+          if (!row) {
+            // folderId doesn't exist
+            return pathValues.concat({
+              path: ['foldersById', folderId],
+              value: null
             });
           }
 
-          const pathValues = ids.reduce((pathValues, folderId) => {
-            const row = rows.find(row => row.id === folderId);
-
-            if (!row) {
-              // folderId doesn't exist
-              return pathValues.concat({
-                path: ['foldersById', folderId],
-                value: null
-              });
-            }
-
-            // add fields to folder
-            return pathValues.concat(fields.map(field => {
-              return {
-                path: ['foldersById', folderId, field],
-                value: row[field]
-              };
-            }));
-          }, []);
-
-          resolve(pathValues);
-        });
-      });
+          // add fields to folder
+          return pathValues.concat(fields.map(field => {
+            return {
+              path: ['foldersById', folderId, field],
+              value: row[field]
+            };
+          }));
+        }, []);
     }
   },
   {
