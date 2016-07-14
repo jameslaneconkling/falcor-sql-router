@@ -8,7 +8,7 @@
     "prod": "node index.js",
     "initDB": "node lib/init_db.js",
     "reinitDB": "rm ./db.sql && node lib/init_db.js",
-    "seedDB": "node lib/seed/db.js",
+    "seedDB": "node lib/seed_db.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -20,6 +20,7 @@
     "falcor-express": "^0.1.2",
     "falcor-router": "^0.4.0",
     "morgan": "^1.7.0",
+    "ramda": "^0.21.0",
     "rx": "^4.0.7",
     "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master"
   }
