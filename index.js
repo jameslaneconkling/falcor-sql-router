@@ -6,7 +6,9 @@ const morgan = require('morgan');
 app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.text({ type: 'text/*' }));
+
+// Static client files
+// app.use(express.static(__dirname + '/public'));
 
 // REST endpoints
 app.use('/api/resource', require('./rest/routes/resource'));
