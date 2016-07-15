@@ -57,6 +57,43 @@ const BaseRouter = Router.createClass([
           }));
           return [...accumulator, ...pathValuesByField];
         }, []);
+    },
+    set(jsonGraph) {
+      const folders = jsonGraph.foldersById;
+      const ids = Object.keys(folders);
+      // ASSUMPTION: all nodes are updating same properties
+      const fields = folders[ids[0]];
+
+      const updateRow = (id, fields) => {
+        return Rx.Observable.create(observer => {
+          const fieldsKeys = Object.keys(fields);
+          const setQuery = fieldsKeys.map(field => `${field} = '${fields[field]}'`);
+
+          db.run(`UPDATE folder SET ${setQuery.join(', ')} WHERE id = ${id}`, [], function(err, rows) {
+            if (err) {
+              observer.onError(err);
+            } else {
+              fieldsKeys.forEach(key => {
+                observer.onNext({
+                  id,
+                  field: key,
+                  value: fields[key]
+                });
+              });
+              observer.onCompleted();
+            }
+          });
+        });
+      };
+
+      return Rx.Observable.from(ids)
+        .concatMap(id => updateRow(id, folders[id]))
+        .map(data => {
+          return {
+            path: ['foldersById', data.id, data.field],
+            value: data.value
+          };
+        });
     }
   },
   // GET Folders from folderList by index
@@ -108,62 +145,62 @@ const BaseRouter = Router.createClass([
     }
   },
   // GET Folders with fields from folderList by index [optimized]
-  // {
-  //   route: "folderList[{integers:indices}][{keys:fields}]",
-  //   get(pathSet) {
-  //     console.log(JSON.stringify(pathSet));
-  //     const indices = pathSet.indices;
-  //     const fields = pathSet.fields;
+  {
+    route: "folderList[{integers:indices}][{keys:fields}]",
+    get(pathSet) {
+      console.log(JSON.stringify(pathSet));
+      const indices = pathSet.indices;
+      const fields = pathSet.fields;
 
-  //     return Rx.Observable.create(observer => {
-  //       // node-sqlite only returns ROWID if it's aliased as something else
-  //       db.all(`SELECT ROWID as rowid, id, ${fields.join(', ')} FROM folder WHERE rowid IN (${indices.join(', ')})`, [], (err, rows) => {
-  //         if (err) {
-  //           observer.onError(err);
-  //         } else {
-  //           indices.forEach(idx => {
-  //             observer.onNext({
-  //               idx,
-  //               row: rows.find(row => row.rowid === idx)
-  //             });
-  //           });
-  //           observer.onCompleted();
-  //         }
-  //       });
-  //     })
-  //       .catch(err => {
-  //         console.error(err);
-  //         return Rx.Observable.throw({
-  //           path: ['folderList'],
-  //           value: $error(err.message)
-  //         });
-  //       })
-  //       .reduce((accumulator, data) => {
-  //         // if row doesn't exist, return null pathValue
-  //         if (!data.row) {
-  //           const missingRowPathValue = {
-  //             path: ['folderList', data.idx],
-  //             value: null
-  //           };
-  //           return [...accumulator, missingRowPathValue];
-  //         }
+      return Rx.Observable.create(observer => {
+        // node-sqlite only returns ROWID if it's aliased as something else
+        db.all(`SELECT ROWID as rowid, id, ${fields.join(', ')} FROM folder WHERE rowid IN (${indices.join(', ')})`, [], (err, rows) => {
+          if (err) {
+            observer.onError(err);
+          } else {
+            indices.forEach(idx => {
+              observer.onNext({
+                idx,
+                row: rows.find(row => row.rowid === idx)
+              });
+            });
+            observer.onCompleted();
+          }
+        });
+      })
+        .catch(err => {
+          console.error(err);
+          return Rx.Observable.throw({
+            path: ['folderList'],
+            value: $error(err.message)
+          });
+        })
+        .reduce((accumulator, data) => {
+          // if row doesn't exist, return null pathValue
+          if (!data.row) {
+            const missingRowPathValue = {
+              path: ['folderList', data.idx],
+              value: null
+            };
+            return [...accumulator, missingRowPathValue];
+          }
 
-  //         // return pathValue ref to folder
-  //         const pathValueRef = {
-  //           path: ['folderList', data.idx],
-  //           value: $ref(['foldersById', data.row.id])
-  //         };
+          // return pathValue ref to folder
+          const pathValueRef = {
+            path: ['folderList', data.idx],
+            value: $ref(['foldersById', data.row.id])
+          };
 
-  //         // return fields by pathValue
-  //         const pathValuesByField = fields.map(field => ({
-  //           path: ['foldersById', data.row.id, field],
-  //           value: data.row[field]
-  //         }));
+          // return fields by pathValue
+          const pathValuesByField = fields.map(field => ({
+            path: ['foldersById', data.row.id, field],
+            value: data.row[field]
+          }));
 
-  //         return [...accumulator, pathValueRef, ...pathValuesByField];
-  //       }, []);
-  //   }
-  // },
+          return [...accumulator, pathValueRef, ...pathValuesByField];
+        }, []);
+    }
+  },
   // GET Subfolders from folders
   {
     route: "foldersById[{keys:parentIds}].folders[{integers:indices}]",
