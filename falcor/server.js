@@ -7,6 +7,11 @@ const db = require('../db');
 const $ref = falcor.Model.ref;
 const $error = falcor.Model.error;
 
+const handleError = (err) => {
+  console.error(err);
+  throw new Error(err.message);
+};
+
 const BaseRouter = Router.createClass([
   // GET Folders by IDs
   {
@@ -35,13 +40,6 @@ const BaseRouter = Router.createClass([
           }
         });
       })
-        .catch(err => {
-          console.error(err);
-          return Rx.Observable.throw({
-            path: ['foldersById'],
-            value: $error(err.message)
-          });
-        })
         .reduce((accumulator, data) => {
           if (!data.row) {
             const missingRowPathValue = {
@@ -56,7 +54,8 @@ const BaseRouter = Router.createClass([
             value: data.row[field]
           }));
           return [...accumulator, ...pathValuesByField];
-        }, []);
+        }, [])
+        .catch(handleError)
     },
     set(jsonGraph) {
       const folders = jsonGraph.foldersById;
@@ -93,7 +92,8 @@ const BaseRouter = Router.createClass([
             path: ['foldersById', data.id, data.field],
             value: data.value
           };
-        });
+        })
+        .catch(handleError);
     }
   },
   // GET Folders from folderList by index
@@ -120,13 +120,6 @@ const BaseRouter = Router.createClass([
           }
         });
       })
-        .catch(err => {
-          console.error(err);
-          return Rx.Observable.throw({
-            path: ['folderList'],
-            value: $error(err.message)
-          });
-        })
         .map(data => {
           // if row doesn't exist, return null pathValue
           if (!data.row) {
@@ -141,7 +134,8 @@ const BaseRouter = Router.createClass([
             path: ['folderList', data.idx],
             value: $ref(['foldersById', data.row.id])
           };
-        }, []);
+        })
+        .catch(handleError);
     }
   },
   // GET Folders with fields from folderList by index [optimized]
@@ -168,13 +162,6 @@ const BaseRouter = Router.createClass([
           }
         });
       })
-        .catch(err => {
-          console.error(err);
-          return Rx.Observable.throw({
-            path: ['folderList'],
-            value: $error(err.message)
-          });
-        })
         .reduce((accumulator, data) => {
           // if row doesn't exist, return null pathValue
           if (!data.row) {
@@ -198,7 +185,8 @@ const BaseRouter = Router.createClass([
           }));
 
           return [...accumulator, pathValueRef, ...pathValuesByField];
-        }, []);
+        }, [])
+        .catch(handleError);
     }
   },
   // GET Subfolders from folders
@@ -251,6 +239,7 @@ const BaseRouter = Router.createClass([
             value: $ref(['foldersById', data.row.id])
           };
         })
+        .catch(handleError);
     }
   }
 ]);
