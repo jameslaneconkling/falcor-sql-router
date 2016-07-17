@@ -138,6 +138,41 @@ const BaseRouter = Router.createClass([
         .catch(handleError);
     }
   },
+  {
+    route: "folderList.length",
+    get(pathSet) {
+      console.log(JSON.stringify(pathSet));
+      const indices = pathSet.indices;
+      const fields = pathSet.fields;
+
+      return Rx.Observable.create(observer => {
+        db.all(`SELECT count(*) as count FROM folder`, [], (err, rows) => {
+          if (err) {
+            observer.onError(err);
+          } else {
+            observer.onNext(rows[0]);
+            observer.onCompleted();
+          }
+        });
+      })
+        .map(data => {
+          // if row doesn't exist, return null pathValue
+          if (!data.count) {
+            return {
+              path: ['folderList', 'length'],
+              value: null
+            };
+          }
+
+          // return pathValue ref to folder
+          return {
+            path: ['folderList', 'length'],
+            value: data.count
+          };
+        })
+        .catch(handleError);
+    }
+  },
   // GET Folders with fields from folderList by index [optimized]
   {
     route: "folderList[{integers:indices}][{keys:fields}]",
