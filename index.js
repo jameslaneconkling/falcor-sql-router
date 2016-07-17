@@ -1,11 +1,15 @@
 const app = require('express')();
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-
+const cors = require('cors');
 // Middleware
 app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors({
+  origin: 'http://localhost:4200',
+  credentials: true
+}));
 
 // Static client files
 // app.use(express.static(__dirname + '/public'));
