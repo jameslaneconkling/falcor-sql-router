@@ -13,7 +13,7 @@ const handleError = (err) => {
 };
 
 const BaseRouter = Router.createClass([
-  // GET Folders by IDs
+  // GET and SET Folders by IDs
   {
     route: "foldersById[{keys:ids}][{keys:fields}]",
     get(pathSet) {
@@ -138,12 +138,11 @@ const BaseRouter = Router.createClass([
         .catch(handleError);
     }
   },
+  // GET Folders Length
   {
     route: "folderList.length",
     get(pathSet) {
       console.log(JSON.stringify(pathSet));
-      const indices = pathSet.indices;
-      const fields = pathSet.fields;
 
       return Rx.Observable.create(observer => {
         db.all(`SELECT count(*) as count FROM folder`, [], (err, rows) => {
@@ -156,15 +155,7 @@ const BaseRouter = Router.createClass([
         });
       })
         .map(data => {
-          // if row doesn't exist, return null pathValue
-          if (!data.count) {
-            return {
-              path: ['folderList', 'length'],
-              value: null
-            };
-          }
-
-          // return pathValue ref to folder
+          // return pathValue count
           return {
             path: ['folderList', 'length'],
             value: data.count
@@ -272,6 +263,45 @@ const BaseRouter = Router.createClass([
           return {
             path: ['foldersById', data.row.parentId, 'folders', data.idx],
             value: $ref(['foldersById', data.row.id])
+          };
+        })
+        .catch(handleError);
+    }
+  },
+  // GET Subfolders count from base folder
+  {
+    route: "foldersById[{keys:parentIds}].folders.length",
+    get(pathSet) {
+      console.log(pathSet);
+      const parentIds = pathSet.parentIds;
+
+      const getFolderSubfolderCount = (parentId) => {
+        return Rx.Observable.create(observer => {
+          // NOTE: this is terribly inefficient - grabs all rows up to the
+          db.all(`SELECT count(*) as count
+                  FROM (SELECT * FROM folder WHERE id = ${parentId}) as parent
+                  JOIN folder as child
+                  ON parent.id = child.parentId`, [], (err, rows) => {
+            if (err) {
+              observer.onError(err);
+            } else {
+              observer.onNext({
+                parentId,
+                count: rows[0].count
+              });
+              observer.onCompleted();
+            }
+          });
+        })
+      };
+
+      return Rx.Observable.from(parentIds)
+        .concatMap(getFolderSubfolderCount)
+        .map(data => {
+          // return pathValue count
+          return {
+            path: ['foldersById', data.parentId, 'folders', 'length'],
+            value: data.count
           };
         })
         .catch(handleError);
