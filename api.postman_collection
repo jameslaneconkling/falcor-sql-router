@@ -1,0 +1,244 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Falcor Example Server",
+		"_postman_id": "5f753dd4-a6fe-b8b6-af4c-e9163e768e64",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET Folder List",
+			"request": {
+				"url": "http://localhost:3000/api/model.json?paths=[[\"folderList\",{\"from\":4,\"to\":8},[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET Folder List Count",
+			"request": {
+				"url": "http://localhost:3000/api/model.json?paths=[[\"folderList\",\"length\"]]&method=get",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "SET Folder by ID ",
+			"request": {
+				"url": "http://localhost:3000/api/model.json",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "method",
+							"value": "set",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "jsonGraph",
+							"value": "{\"jsonGraph\":{\"foldersById\":{\"1\":{\"name\":\"folder 1 edit 1\"}}},\"paths\":[[\"foldersById\",\"1\",\"name\"]]}",
+							"type": "text",
+							"enabled": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET Folder by ID",
+			"request": {
+				"url": "http://localhost:3000/api/model.json?paths=[[\"foldersById\",[1, 3, 5, 15],[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET Folder by ID with Sub Folder",
+			"request": {
+				"url": "http://localhost:3000/api/model.json?paths=[[\"foldersById\",[1, 2], \"name\"],[\"foldersById\",[1, 2],[\"folders\"],{\"to\":3},[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET Folder by ID with Sub Folder Count",
+			"request": {
+				"url": "http://localhost:3000/api/model.json?paths=[[\"foldersById\",[2, 3, 4], \"name\"],[\"foldersById\",[2, 3, 4],\"folders\",\"length\"]]&method=get",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET Folder List with Sub Folder",
+			"request": {
+				"url": "http://localhost:3000/api/model.json?paths=[[\"folderList\",{\"to\":4}, \"name\"],[\"folderList\",{\"to\":4},[\"folders\"],{\"to\":3},[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET ERROR",
+			"request": {
+				"url": "http://localhost:3000/api/model.json?paths=[[\"nonExistentNode\"]]&method=get",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "SET ERROR",
+			"request": {
+				"url": "http://localhost:3000/api/model.json",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "method",
+							"value": "set",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "jsonGraph",
+							"value": "{\"jsonGraph\":{\"NonExistentNode\":{\"1\":{\"name\":\"don't exist\"}}},\"paths\":[[\"NonExistentNode\",\"1\",\"name\"]]}",
+							"type": "text",
+							"enabled": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Call ERROR",
+			"request": {
+				"url": "http://localhost:3000/api/model.json",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "method",
+							"value": "call",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "callPath",
+							"value": "[\"nonExistentNode\",1,\"delete\"]",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "arguments",
+							"value": "[]",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "pathSuffixes",
+							"value": "[\"nonExistentNode\"]",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "paths",
+							"value": "[]",
+							"type": "text",
+							"enabled": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
