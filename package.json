@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ENV=dev node index.js",
-    "prod": "node index.js",
+    "dev": "NODE_ENV=development node index.js",
+    "prod": "NODE_ENV=production node index.js",
     "initDB": "node lib/init_db.js",
     "reinitDB": "rm ./db.sql && node lib/init_db.js",
     "seedDB": "node lib/seed_db.js",
