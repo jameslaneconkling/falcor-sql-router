@@ -9,11 +9,11 @@ const $error = falcor.Model.error;
 
 const handleError = (err) => {
   console.error(err);
-  throw new Error(err.message);
+  return $error(err.message);
 };
 
 const BaseRouter = Router.createClass([
-  // GET and SET Folders by IDs
+  // GET SET Folders by IDs
   {
     route: "foldersById[{keys:ids}][{keys:fields}]",
     get(pathSet) {
@@ -68,7 +68,7 @@ const BaseRouter = Router.createClass([
           const fieldsKeys = Object.keys(fields);
           const setQuery = fieldsKeys.map(field => `${field} = '${fields[field]}'`);
 
-          db.run(`UPDATE folder SET ${setQuery.join(', ')} WHERE id = ${id}`, [], function(err, rows) {
+          db.run(`UPDATE folder SET ${setQuery.join(', ')} WHERE id = ${id}`, [], function(err) {
             if (err) {
               observer.onError(err);
             } else {
@@ -96,6 +96,58 @@ const BaseRouter = Router.createClass([
         .catch(handleError);
     }
   },
+  // DELETE Folders by ID
+  {
+    route: "foldersById.delete",
+    call(callPath, ids) {
+      return Rx.Observable.create(observer => {
+        db.run(`DELETE FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
+          if (err) {
+            observer.onError(err);
+          } else {
+            ids.forEach(id => observer.onNext(id));
+            observer.onCompleted();
+          }
+        });
+      })
+        // .map(id => {
+        //   // foldersList is treated as an implicit dependency, so invalidation must be handled by client
+        //   return {
+        //     path: ['foldersById', id],
+        //     value: null
+        //   };
+        // })
+        .reduce((res, id, idx) => {
+          // foldersList is treated as an explicit dependency, so invalidation is handled by server
+
+          // set deleted node to null
+          res.jsonGraph.foldersById[id] = null;
+          res.paths.push(['foldersById', id]);
+
+          // update dependent nodes
+          res.jsonGraph.foldersList.length -= 1;
+          if (idx === 0) {
+            res.paths.push(['foldersList', 'length']);
+          }
+
+          // invalidate dependent nodeSets
+          if (idx === 0) {
+            // should be able to only invalidate from [id.index..length]
+            res.invalidated.push(['foldersList', {from: 0}]);
+          }
+
+          return res;
+        }, {jsonGraph: {foldersById: {}, foldersList: {}}, paths: [], invalidated: []})
+        .catch(handleError)
+    }
+  },
+  // DELETE Folders from List
+  // {
+  //   route: "foldersList.delete",
+  //   call(callPath, indices) {
+
+  //   }
+  // },
   // GET Folders from folderList by index
   {
     route: "folderList[{integers:indices}]",
