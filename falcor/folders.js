@@ -1,6 +1,7 @@
 const falcor = require('falcor');
 const R = require('ramda');
 const Rx = require('rx');
+const folderController = require('../folder/folderController');
 const db = require('../db');
 const $ref = falcor.Model.ref;
 const $error = falcor.Model.error;
@@ -10,50 +11,36 @@ const handleError = (err) => {
   return $error(err.message);
 };
 
+
+
 module.exports = [
   // GET SET Folders by IDs
   {
     route: "foldersById[{keys:ids}][{keys:fields}]",
     get(pathSet) {
-      console.log(JSON.stringify(pathSet));
-      const ids = pathSet.ids;
-      const fields = pathSet.fields;
+      const foldersSource = folderController.getByIds(pathSet.ids, pathSet.fields)
+      
+      // convert missing rows into null pathValue
+      const nullPathValues = foldersSource
+        .filter(data => !data.row)
+        .map(data => ({
+          path: ['foldersById', data.id],
+          value: null
+        }));
 
-      // * emit query by row
-      // * catch db query error
-      // * convert missing rows into null pathValue
-      // * break rows down into fields and convert each into a pathValue
-      return Rx.Observable.create(observer => {
-        db.all(`SELECT id, ${fields.join(', ')} FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
-          if (err) {
-            observer.onError(err);
-          } else {
-            ids.forEach(id => {
-              observer.onNext({
-                id,
-                row: rows.find(row => row.id === id)
-              });
-            });
-            observer.onCompleted();
-          }
-        });
-      })
+      // break rows down into fields and convert each into a pathValue
+      const pathValues = foldersSource
+        .filter(data => data.row)
         .reduce((accumulator, data) => {
-          if (!data.row) {
-            const missingRowPathValue = {
-              path: ['foldersById', data.id],
-              value: null
-            };
-            return [...accumulator, missingRowPathValue];
-          }
-
-          const pathValuesByField = fields.map(field => ({
+          const pathValuesByField = Object.keys(data.row).map(field => ({
             path: ['foldersById', data.id, field],
             value: data.row[field]
           }));
+
           return [...accumulator, ...pathValuesByField];
-        }, [])
-        .catch(handleError)
+        }, []);
+
+      return Rx.Observable.merge(nullPathValues, pathValues);
     },
     set(jsonGraph) {
       const folders = jsonGraph.foldersById;
@@ -211,7 +198,6 @@ module.exports = [
             value: data.count
           };
         })
-        .catch(handleError);
     }
   },
   // GET Folders with fields from folderList by index [optimized]
