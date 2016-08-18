@@ -19,7 +19,7 @@ app.use('/api/resource', require('./rest/routes/resource'));
 app.use('/api/folder', require('./rest/routes/folder'));
 
 // Falcor endpoint
-app.use('/api/model.json', require('./falcor/server'));
+app.use('/api/model.json', require('./falcor/'));
 
 // Error handling
 app.use((err, req, res, next) => {

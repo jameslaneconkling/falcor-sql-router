@@ -1,5 +1,3 @@
-const FalcorServer = require('falcor-express');
-const Router = require('falcor-router');
 const falcor = require('falcor');
 const R = require('ramda');
 const Rx = require('rx');
@@ -12,7 +10,7 @@ const handleError = (err) => {
   return $error(err.message);
 };
 
-const BaseRouter = Router.createClass([
+module.exports = [
   // GET SET Folders by IDs
   {
     route: "foldersById[{keys:ids}][{keys:fields}]",
@@ -359,31 +357,4 @@ const BaseRouter = Router.createClass([
         .catch(handleError);
     }
   }
-]);
-
-// To subclass:
-// const SubRouter = function(prop) {
-//   BaseRouter.call(this);
-//   this.prop = prop;
-// };
-//
-// SubRouter.prototype = Object.create(BaseRouter.prototype);
-
-module.exports = FalcorServer.dataSourceRoute((req, res) => {
-  res.type('json');
-  return new BaseRouter();
-
-  // mock
-  // return new falcor.Model({
-  //   cache: {
-  //     foldersById: {
-  //       1: {
-  //         name: 'folder1',
-  //       },
-  //       2: {
-  //         name: 'folder2',
-  //       }
-  //     }
-  //   }
-  // }).asDataSource();
-});
+];
