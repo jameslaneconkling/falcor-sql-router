@@ -18,7 +18,7 @@ module.exports = [
   {
     route: "foldersById[{keys:ids}][{keys:fields}]",
     get(pathSet) {
-      const foldersSource = folderController.getByIds(pathSet.ids, pathSet.fields)
+      const foldersSource = folderController.getByIds(pathSet.ids, pathSet.fields);
       
       // convert missing rows into null pathValue
       const nullPathValues = foldersSource
@@ -78,7 +78,7 @@ module.exports = [
             value: data.value
           };
         })
-        .catch(handleError);
+
     }
   },
   // DELETE Folders by ID
@@ -123,7 +123,7 @@ module.exports = [
 
           return res;
         }, {jsonGraph: {foldersById: {}, foldersList: {}}, paths: [], invalidated: []})
-        .catch(handleError)
+
     }
   },
   // DELETE Folders from List
@@ -172,7 +172,7 @@ module.exports = [
             value: $ref(['foldersById', data.row.id])
           };
         })
-        .catch(handleError);
+
     }
   },
   // GET Folders Length
@@ -248,7 +248,7 @@ module.exports = [
 
           return [...accumulator, pathValueRef, ...pathValuesByField];
         }, [])
-        .catch(handleError);
+
     }
   },
   // GET Subfolders from folders
@@ -301,7 +301,7 @@ module.exports = [
             value: $ref(['foldersById', data.row.id])
           };
         })
-        .catch(handleError);
+
     }
   },
   // GET Subfolders count from base folder
@@ -340,7 +340,7 @@ module.exports = [
             value: data.count
           };
         })
-        .catch(handleError);
+
     }
   }
 ];

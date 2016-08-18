@@ -24,6 +24,7 @@ exports.getByIds = (ids, fields) => {
   return Rx.Observable.create(observer => {
     db.all(`SELECT id, ${fields.join(', ')} FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
       if (err) {
+        console.error(err);
         return observer.onError(err);
       }
 
