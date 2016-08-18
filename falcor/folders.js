@@ -6,13 +6,6 @@ const db = require('../db');
 const $ref = falcor.Model.ref;
 const $error = falcor.Model.error;
 
-const handleError = (err) => {
-  console.error(err);
-  return $error(err.message);
-};
-
-
-
 module.exports = [
   // GET SET Folders by IDs
   {
@@ -135,28 +128,11 @@ module.exports = [
   // },
   // GET Folders from folderList by index
   {
-    route: "folderList[{integers:indices}]",
+    route: "folderList[{ranges:ranges}]",
     get(pathSet) {
-      console.log(JSON.stringify(pathSet));
-      const indices = pathSet.indices;
-      const fields = pathSet.fields;
+      const ranges = pathSet.ranges;
 
-      return Rx.Observable.create(observer => {
-        // node-sqlite only returns ROWID if it's aliased as something else
-        db.all(`SELECT ROWID as rowid, id FROM folder WHERE rowid IN (${indices.join(', ')})`, [], (err, rows) => {
-          if (err) {
-            observer.onError(err);
-          } else {
-            indices.forEach(idx => {
-              observer.onNext({
-                idx,
-                row: rows.find(row => row.rowid === idx)
-              });
-            });
-            observer.onCompleted();
-          }
-        });
-      })
+      return folderController.getByRanges(ranges, [])
         .map(data => {
           // if row doesn't exist, return null pathValue
           if (!data.row) {
@@ -171,8 +147,41 @@ module.exports = [
             path: ['folderList', data.idx],
             value: $ref(['foldersById', data.row.id])
           };
-        })
+        });
+    }
+  },
+  // GET Folders with fields from folderList by index [optimized]
+  {
+    route: "folderList[{ranges:ranges}][{keys:fields}]",
+    get(pathSet) {
+      const ranges = pathSet.ranges;
+      const fields = pathSet.fields;
 
+      return folderController.getByRanges(ranges, fields)
+        .reduce((accumulator, data) => {
+          // if row doesn't exist, return null pathValue
+          if (!data.row) {
+            const missingRowPathValue = {
+              path: ['folderList', data.idx],
+              value: null
+            };
+            return [...accumulator, missingRowPathValue];
+          }
+
+          // return pathValue ref to folder
+          const pathValueRef = {
+            path: ['folderList', data.idx],
+            value: $ref(['foldersById', data.row.id])
+          };
+
+          // return fields by pathValue
+          const pathValuesByField = fields.map(field => ({
+            path: ['foldersById', data.row.id, field],
+            value: data.row[field]
+          }));
+
+          return [...accumulator, pathValueRef, ...pathValuesByField];
+        }, []);
     }
   },
   // GET Folders Length
@@ -198,57 +207,6 @@ module.exports = [
             value: data.count
           };
         })
-    }
-  },
-  // GET Folders with fields from folderList by index [optimized]
-  {
-    route: "folderList[{integers:indices}][{keys:fields}]",
-    get(pathSet) {
-      console.log(JSON.stringify(pathSet));
-      const indices = pathSet.indices;
-      const fields = pathSet.fields;
-
-      return Rx.Observable.create(observer => {
-        // node-sqlite only returns ROWID if it's aliased as something else
-        db.all(`SELECT ROWID as rowid, id, ${fields.join(', ')} FROM folder WHERE rowid IN (${indices.join(', ')})`, [], (err, rows) => {
-          if (err) {
-            observer.onError(err);
-          } else {
-            indices.forEach(idx => {
-              observer.onNext({
-                idx,
-                row: rows.find(row => row.rowid === idx)
-              });
-            });
-            observer.onCompleted();
-          }
-        });
-      })
-        .reduce((accumulator, data) => {
-          // if row doesn't exist, return null pathValue
-          if (!data.row) {
-            const missingRowPathValue = {
-              path: ['folderList', data.idx],
-              value: null
-            };
-            return [...accumulator, missingRowPathValue];
-          }
-
-          // return pathValue ref to folder
-          const pathValueRef = {
-            path: ['folderList', data.idx],
-            value: $ref(['foldersById', data.row.id])
-          };
-
-          // return fields by pathValue
-          const pathValuesByField = fields.map(field => ({
-            path: ['foldersById', data.row.id, field],
-            value: data.row[field]
-          }));
-
-          return [...accumulator, pathValueRef, ...pathValuesByField];
-        }, [])
-
     }
   },
   // GET Subfolders from folders
