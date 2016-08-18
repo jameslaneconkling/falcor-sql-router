@@ -94,3 +94,22 @@ exports.getByRanges = (ranges, fields) => {
 
   return Rx.Observable.merge(...folderListSources);
 };
+
+/**
+ * Delete folders by id
+ * 
+ * @params {Array} ids
+ * @return {Observable}
+ */
+exports.deleteFoldersById = (ids) => {
+  return Rx.Observable.create(observer => {
+    db.run(`DELETE FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
+      if (err) {
+        observer.onError(err);
+      } else {
+        ids.forEach(id => observer.onNext(id));
+        observer.onCompleted();
+      }
+    });
+  });
+};

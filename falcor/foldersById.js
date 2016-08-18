@@ -73,51 +73,46 @@ module.exports = [
 
     }
   },
-  // DELETE Folders by ID
+  // DELETE Folders by ID [implicit]
   {
     route: "foldersById.delete",
     call(callPath, ids) {
-      return Rx.Observable.create(observer => {
-        db.run(`DELETE FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
-          if (err) {
-            observer.onError(err);
-          } else {
-            ids.forEach(id => observer.onNext(id));
-            observer.onCompleted();
-          }
-        });
-      })
-        // .map(id => {
-        //   // foldersList is treated as an implicit dependency, so invalidation must be handled by client
-        //   return {
-        //     path: ['foldersById', id],
-        //     value: null
-        //   };
-        // })
-        .reduce((res, id, idx) => {
-          // foldersList is treated as an explicit dependency, so invalidation is handled by server
-
-          // set deleted node to null
-          res.jsonGraph.foldersById[id] = null;
-          res.paths.push(['foldersById', id]);
-
-          // update dependent nodes
-          res.jsonGraph.foldersList.length -= 1;
-          if (idx === 0) {
-            res.paths.push(['foldersList', 'length']);
-          }
-
-          // invalidate dependent nodeSets
-          if (idx === 0) {
-            // should be able to only invalidate from [id.index..length]
-            res.invalidated.push(['foldersList', {from: 0}]);
-          }
-
-          return res;
-        }, {jsonGraph: {foldersById: {}, foldersList: {}}, paths: [], invalidated: []})
-
+      // foldersList is treated as an implicit dependency, so invalidation must be handled by client
+      return folderController.deleteFoldersById(ids)
+        .map(id => ({
+          path: ['foldersById', id],
+          value: null
+        }));
     }
   },
+  // DELETE Folders by ID [explicit]
+  // {
+  //   route: "foldersById.delete",
+  //   call(callPath, ids) {
+  //     // foldersList is treated as an explicit dependency, so invalidation is handled by server
+  //     return folderController.deleteFoldersById(ids)
+  //       .reduce((res, id, idx) => {
+  //         // set deleted node to null
+  //         res.jsonGraph.foldersById[id] = null;
+  //         res.paths.push(['foldersById', id]);
+
+  //         // update dependent nodes
+  //         res.jsonGraph.foldersList.length = $ref(['foldersList', 'length']);
+  //         if (idx === 0) {
+  //           res.paths.push(['foldersList', 'length']);
+  //         }
+
+  //         // invalidate dependent nodeSets
+  //         if (idx === 0) {
+  //           // should be able to only invalidate from [id.index..length]
+  //           res.invalidated.push(['foldersList', {from: 0}]);
+  //         }
+
+  //         return res;
+  //       }, {jsonGraph: {foldersById: {}, foldersList: {}}, paths: [], invalidated: []})
+
+  //   }
+  // },
   // GET Subfolders from folders
   {
     route: "foldersById[{keys:parentIds}].folders[{integers:indices}]",
