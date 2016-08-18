@@ -5,13 +5,6 @@ const db = require('../db');
 const $ref = falcor.Model.ref;
 
 module.exports = [
-  // DELETE Folders from List
-  // {
-  //   route: "foldersList.delete",
-  //   call(callPath, indices) {
-
-  //   }
-  // },
   // GET Folders from folderList by index
   {
     route: "folderList[{ranges:ranges}]",
@@ -74,25 +67,22 @@ module.exports = [
   {
     route: "folderList.length",
     get(pathSet) {
-      console.log(JSON.stringify(pathSet));
-
-      return Rx.Observable.create(observer => {
-        db.all(`SELECT count(*) as count FROM folder`, [], (err, rows) => {
-          if (err) {
-            observer.onError(err);
-          } else {
-            observer.onNext(rows[0]);
-            observer.onCompleted();
-          }
-        });
-      })
+      return folderController.getCount()
         .map(data => {
           // return pathValue count
           return {
             path: ['folderList', 'length'],
             value: data.count
           };
-        })
+        });
     }
   },
+  // CREATE Folder
+  // TODO - handle thisPath and refPath
+  {
+    route: 'folderList',
+    call(callPath, args, refPath, thisPath) {
+
+    }
+  }
 ];
