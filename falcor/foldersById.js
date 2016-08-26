@@ -1,7 +1,7 @@
 const falcor = require('falcor');
 const R = require('ramda');
 const Rx = require('rx');
-const folderController = require('../folder/folderController');
+const Folder = require('../folder/folderModel');
 const db = require('../db');
 const $ref = falcor.Model.ref;
 
@@ -10,7 +10,7 @@ module.exports = [
   {
     route: "foldersById[{keys:ids}][{keys:fields}]",
     get(pathSet) {
-      const foldersSource = folderController.getByIds(pathSet.ids, pathSet.fields);
+      const foldersSource = Folder.getByIds(pathSet.ids, pathSet.fields);
       
       // convert missing rows into null pathValue
       const nullPathValues = foldersSource
@@ -78,7 +78,7 @@ module.exports = [
     route: "foldersById.delete",
     call(callPath, ids) {
       // foldersList is treated as an implicit dependency, so invalidation must be handled by client
-      return folderController.deleteFoldersById(ids)
+      return Folder.deleteFoldersById(ids)
         .map(id => ({
           path: ['foldersById', id],
           value: null
@@ -90,7 +90,7 @@ module.exports = [
   //   route: "foldersById.delete",
   //   call(callPath, ids) {
   //     // foldersList is treated as an explicit dependency, so invalidation is handled by server
-  //     return folderController.deleteFoldersById(ids)
+  //     return Folder.deleteFoldersById(ids)
   //       .reduce((res, id, idx) => {
   //         // set deleted node to null
   //         res.jsonGraph.foldersById[id] = null;
