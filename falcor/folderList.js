@@ -1,7 +1,5 @@
 const falcor = require('falcor');
-const Rx = require('rx');
-const folderController = require('../folder/folderController');
-const db = require('../db');
+const Folder = require('../folder/folderModel');
 const $ref = falcor.Model.ref;
 
 module.exports = [
@@ -11,7 +9,7 @@ module.exports = [
     get(pathSet) {
       const ranges = pathSet.ranges;
 
-      return folderController.getByRanges(ranges, [])
+      return Folder.getByRanges(ranges, [])
         .map(data => {
           // if row doesn't exist, return null pathValue
           if (!data.row) {
@@ -36,7 +34,7 @@ module.exports = [
       const ranges = pathSet.ranges;
       const fields = pathSet.fields;
 
-      return folderController.getByRanges(ranges, fields)
+      return Folder.getByRanges(ranges, fields)
         .reduce((accumulator, data) => {
           // if row doesn't exist, return null pathValue
           if (!data.row) {
@@ -67,7 +65,7 @@ module.exports = [
   {
     route: "folderList.length",
     get(pathSet) {
-      return folderController.getCount()
+      return Folder.getCount()
         .map(data => {
           // return pathValue count
           return {
