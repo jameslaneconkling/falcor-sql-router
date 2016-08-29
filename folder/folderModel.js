@@ -2,7 +2,9 @@ const Rx = require('rx');
 const R = require('ramda');
 const db = require('../db');
 
-falcorRange2List = range => R.range(range.from, range.to + 1);
+range2List = range => R.range(range.from, range.to + 1);
+
+range2LimitOffset = range => ({limit: range.to - range.from + 1, offset: range.from - 1});
 
 /**
  * Get folders by id
@@ -60,13 +62,15 @@ exports.getByIds = (ids, fields) => {
  */
 exports.getByRange = (range, fields) => {
   return Rx.Observable.create(observer => {
-    db.all(`SELECT id, ${fields.join(', ')} FROM folder LIMIT ${range.to - range.from + 1} OFFSET ${range.from - 1}`, [], (err, rows) => {
+    const {limit, offset} = range2LimitOffset(range);
+
+    db.all(`SELECT id, ${fields.join(', ')} FROM folder LIMIT ${limit} OFFSET ${offset}`, [], (err, rows) => {
       if (err) {
         console.error(err);
         return observer.onError(err);
       }
     
-      falcorRange2List(range).forEach((rangeIndex, idx) => {
+      range2List(range).forEach((rangeIndex, idx) => {
         observer.onNext({
           idx: rangeIndex,
           row: rows[idx]
@@ -88,11 +92,8 @@ exports.getByRange = (range, fields) => {
  * @return {Observable}
  */
 exports.getByRanges = (ranges, fields) => {
-  const folderListSources = ranges.map(range => {
-    return exports.getByRange(range, fields);
-  });
-
-  return Rx.Observable.merge(...folderListSources);
+  return Rx.Observable.from(ranges)
+    .concatMap(range => exports.getByRange(range, fields));
 };
 
 /**
@@ -122,12 +123,105 @@ exports.getCount = () => {
   return Rx.Observable.create(observer => {
     db.all(`SELECT count(*) as count FROM folder`, [], (err, rows) => {
       if (err) {
-        console.error(err)
+        console.error(err);
         return observer.onError(err);
       }
 
       observer.onNext(rows[0]);
       observer.onCompleted();
     });
-  })
+  });
+};
+
+/**
+ * 
+ */
+exports.setRow = (id, fields) => {
+  return Rx.Observable.create(observer => {
+    const fieldsKeys = Object.keys(fields);
+    const setQuery = fieldsKeys.map(field => `${field} = '${fields[field]}'`);
+
+    // TODO - don't convert null to "null"
+
+    db.run(`UPDATE folder SET ${setQuery.join(', ')} WHERE id = ${id}`, [], function(err) {
+      if (err) {
+        console.error(err);
+        return observer.onError(err);
+      }
+
+      fieldsKeys.forEach(key => {
+        observer.onNext({
+          id,
+          field: key,
+          value: fields[key]
+        });
+      });
+
+      observer.onCompleted();
+    });
+  });
+};
+
+/**
+ * 
+ */
+exports.getSubfoldersByRange = (parentId, range) => {
+
+  return Rx.Observable.create(observer => {
+    const {limit, offset} = range2LimitOffset(range);
+
+    db.all(`SELECT child.id as id, child.parentId as parentId
+            FROM (SELECT * FROM folder WHERE id = ${parentId}) as parent
+            JOIN folder as child
+            ON parent.id = child.parentId
+            LIMIT ${limit} OFFSET ${offset}`, [], (err, rows) => {
+      if (err) {
+        console.error(err);
+        return observer.onError(err);
+      }
+      
+      childIndices.forEach(idx => {
+        observer.onNext({
+          idx,
+          parentId,
+          row: rows[idx]
+        });
+      });
+      
+      observer.onCompleted();
+    });
+  });
+};
+
+/**
+ * 
+ */
+exports.getSubfoldersByRanges = (parentId, ranges) => {
+  return Rx.Observable.from(ranges)
+    .concatMap(range => exports.getSubfoldersByRange(parentId, range));
+};
+
+/**
+ * 
+ */
+exports.getSubfolderCount = (parentId) => {
+  return Rx.Observable.create(observer => {
+    // NOTE: this is terribly inefficient - grabs all rows up to the
+    db.all(`SELECT count(*) as count
+            FROM (SELECT * FROM folder WHERE id = ${parentId}) as parent
+            JOIN folder as child
+            ON parent.id = child.parentId`, [], (err, rows) => {
+      if (err) {
+        console.error(err);
+        return observer.onError(err);
+      }
+      
+      observer.onNext({
+        parentId,
+        count: rows[0].count
+      });
+      
+      observer.onCompleted();
+    });
+  });
 };

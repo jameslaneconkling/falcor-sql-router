@@ -1,8 +1,6 @@
 const falcor = require('falcor');
-const R = require('ramda');
 const Rx = require('rx');
 const Folder = require('../folder/folderModel');
-const db = require('../db');
 const $ref = falcor.Model.ref;
 
 module.exports = [
@@ -37,40 +35,15 @@ module.exports = [
     set(jsonGraph) {
       const folders = jsonGraph.foldersById;
       const ids = Object.keys(folders);
-      // ASSUMPTION: all nodes are updating same properties
-      const fields = folders[ids[0]];
-
-      const updateRow = (id, fields) => {
-        return Rx.Observable.create(observer => {
-          const fieldsKeys = Object.keys(fields);
-          const setQuery = fieldsKeys.map(field => `${field} = '${fields[field]}'`);
-
-          db.run(`UPDATE folder SET ${setQuery.join(', ')} WHERE id = ${id}`, [], function(err) {
-            if (err) {
-              observer.onError(err);
-            } else {
-              fieldsKeys.forEach(key => {
-                observer.onNext({
-                  id,
-                  field: key,
-                  value: fields[key]
-                });
-              });
-              observer.onCompleted();
-            }
-          });
-        });
-      };
 
       return Rx.Observable.from(ids)
-        .concatMap(id => updateRow(id, folders[id]))
+        .concatMap(id => Folder.setRow(id, folders[id]))
         .map(data => {
           return {
             path: ['foldersById', data.id, data.field],
             value: data.value
           };
-        })
-
+        });
     }
   },
   // DELETE Folders by ID [implicit]
@@ -115,39 +88,13 @@ module.exports = [
   // },
   // GET Subfolders from folders
   {
-    route: "foldersById[{keys:parentIds}].folders[{integers:indices}]",
+    route: "foldersById[{keys:parentIds}].folders[{ranges:childRanges}]",
     get(pathSet) {
-      console.log(JSON.stringify(pathSet));
       const parentIds = pathSet.parentIds;
-      const indices = pathSet.indices;
-
-      // TODO - b/c sqlite doesn't support window functions, this queries the db separately...
-      const getFolderSubfolders = (childIndices, parentId) => {
-        return Rx.Observable.create(observer => {
-          // NOTE: this is terribly inefficient - grabs all rows up to the
-          db.all(`SELECT child.id as id, child.parentId as parentId
-                  FROM (SELECT * FROM folder WHERE id = ${parentId}) as parent
-                  JOIN folder as child
-                  ON parent.id = child.parentId
-                  LIMIT ${indices[indices.length -1]} OFFSET ${indices[indices[0]]}`, [], (err, rows) => {
-            if (err) {
-              observer.onError(err);
-            } else {
-              childIndices.forEach(idx => {
-                observer.onNext({
-                  idx,
-                  parentId,
-                  row: rows[idx]
-                });
-              });
-              observer.onCompleted();
-            }
-          });
-        })
-      };
+      const childRanges = pathSet.childRanges;
 
       return Rx.Observable.from(parentIds)
-        .concatMap(R.curry(getFolderSubfolders)(indices))
+        .concatMap(parentId => Folder.getSubfoldersByRange(parentId, childRanges))
         .map(data => {
           // if row doesn't exist, return null pathValue
           if (!data.row) {
@@ -162,47 +109,24 @@ module.exports = [
             path: ['foldersById', data.row.parentId, 'folders', data.idx],
             value: $ref(['foldersById', data.row.id])
           };
-        })
-
+        });
     }
   },
   // GET Subfolders count from base folder
   {
     route: "foldersById[{keys:parentIds}].folders.length",
     get(pathSet) {
-      console.log(pathSet);
       const parentIds = pathSet.parentIds;
 
-      const getFolderSubfolderCount = (parentId) => {
-        return Rx.Observable.create(observer => {
-          // NOTE: this is terribly inefficient - grabs all rows up to the
-          db.all(`SELECT count(*) as count
-                  FROM (SELECT * FROM folder WHERE id = ${parentId}) as parent
-                  JOIN folder as child
-                  ON parent.id = child.parentId`, [], (err, rows) => {
-            if (err) {
-              observer.onError(err);
-            } else {
-              observer.onNext({
-                parentId,
-                count: rows[0].count
-              });
-              observer.onCompleted();
-            }
-          });
-        })
-      };
-
       return Rx.Observable.from(parentIds)
-        .concatMap(getFolderSubfolderCount)
+        .concatMap(Folder.getSubfolderCount)
         .map(data => {
           // return pathValue count
           return {
             path: ['foldersById', data.parentId, 'folders', 'length'],
             value: data.count
           };
-        })
-
+        });
     }
   }
 ];
