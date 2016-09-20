@@ -1,10 +1,14 @@
 const Rx = require('rx');
-const R = require('ramda');
 const db = require('../db');
+const {
+  range2List,
+  range2LimitOffset
+} = require('../utils/falcor');
 
-range2List = range => R.range(range.from, range.to + 1);
-
-range2LimitOffset = range => ({limit: range.to - range.from + 1, offset: range.from - 1});
+handleError = (observer, err) => {
+  console.error(err);
+  return observer.onError(err);
+};
 
 /**
  * Get folders by id
@@ -25,10 +29,9 @@ range2LimitOffset = range => ({limit: range.to - range.from + 1, offset: range.f
  */
 exports.getByIds = (ids, fields) => {
   return Rx.Observable.create(observer => {
-    db.all(`SELECT id, ${fields.join(', ')} FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
+    db.all(`SELECT ${fields.concat('id')} FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
       if (err) {
-        console.error(err);
-        return observer.onError(err);
+        return handleError(observer, err);
       }
 
       ids.forEach(id => {
@@ -64,10 +67,9 @@ exports.getByRange = (range, fields) => {
   return Rx.Observable.create(observer => {
     const {limit, offset} = range2LimitOffset(range);
 
-    db.all(`SELECT id, ${fields.join(', ')} FROM folder LIMIT ${limit} OFFSET ${offset}`, [], (err, rows) => {
+    db.all(`SELECT ${fields.concat('id').join(', ')} FROM folder LIMIT ${limit} OFFSET ${offset}`, [], (err, rows) => {
       if (err) {
-        console.error(err);
-        return observer.onError(err);
+        return handleError(observer, err);
       }
 
       range2List(range).forEach((rangeIndex, idx) => {
@@ -103,8 +105,7 @@ exports.create = (name, parentId) => {
   return Rx.Observable.create(observer => {
     db.run(`INSERT INTO folder (name, parentId) VALUES (${name}, ${parentId})`, [], (err) => {
       if (err) {
-        console.error(err);
-        return observer.onError(err);
+        return handleError(observer, err);
       }
 
       observer.onNext({id: this.lastID, name, parentId});
@@ -123,8 +124,7 @@ exports.deleteByIds = (ids) => {
   return Rx.Observable.create(observer => {
     db.run(`DELETE FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
       if (err) {
-        console.error(err);
-        return observer.onError(err);
+        return handleError(observer, err);
       }
 
       ids.forEach(id => observer.onNext(id));
@@ -142,8 +142,7 @@ exports.getCount = () => {
   return Rx.Observable.create(observer => {
     db.get(`SELECT count(*) as count FROM folder`, [], (err, row) => {
       if (err) {
-        console.error(err);
-        return observer.onError(err);
+        return handleError(observer, err);
       }
 
       observer.onNext(row.count);
@@ -168,8 +167,7 @@ exports.setRow = (id, fields) => {
 
     db.run(`UPDATE folder SET ${setQuery.join(', ')} WHERE id = ${id}`, [], function(err) {
       if (err) {
-        console.error(err);
-        return observer.onError(err);
+        return handleError(observer, err);
       }
 
       fieldsKeys.forEach(key => {
@@ -202,8 +200,7 @@ exports.getSubfoldersByRange = (parentId, range) => {
             ON parent.id = child.parentId
             LIMIT ${limit} OFFSET ${offset}`, [], (err, rows) => {
       if (err) {
-        console.error(err);
-        return observer.onError(err);
+        return handleError(observer, err);
       }
 
       range2List(range).forEach(idx => {
@@ -241,8 +238,7 @@ exports.getSubfolderCount = (parentId) => {
   return Rx.Observable.create(observer => {
     db.get(`SELECT count(*) as count FROM folder WHERE parentId = ${parentId}`, [], (err, row) => {
       if (err) {
-        console.error(err);
-        return observer.onError(err);
+        return handleError(observer, err);
       }
 
       observer.onNext({
