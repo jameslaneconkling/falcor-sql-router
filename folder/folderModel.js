@@ -239,7 +239,7 @@ exports.getSubfoldersByRanges = (parentId, ranges) => {
  */
 exports.getSubfolderCount = (parentId) => {
   return Rx.Observable.create(observer => {
-    db.get(`SELECT count(*) FROM folder WHERE parentId = ${parentId}`, [], (err, row) => {
+    db.get(`SELECT count(*) as count FROM folder WHERE parentId = ${parentId}`, [], (err, row) => {
       if (err) {
         console.error(err);
         return observer.onError(err);
