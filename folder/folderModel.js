@@ -102,7 +102,7 @@ exports.getByRanges = (ranges, fields) => {
  * @param {Array} ids
  * @return {Observable}
  */
-exports.deleteFoldersById = (ids) => {
+exports.deleteByIds = (ids) => {
   return Rx.Observable.create(observer => {
     db.run(`DELETE FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
       if (err) {

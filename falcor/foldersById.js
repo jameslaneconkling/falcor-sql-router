@@ -9,7 +9,7 @@ module.exports = [
     route: "foldersById[{keys:ids}][{keys:fields}]",
     get(pathSet) {
       const foldersSource = Folder.getByIds(pathSet.ids, pathSet.fields);
-      
+
       // convert missing rows into null pathValue
       const nullPathValues = foldersSource
         .filter(data => !data.row)
@@ -51,7 +51,7 @@ module.exports = [
     route: "foldersById.delete",
     call(callPath, ids) {
       // foldersList is treated as an implicit dependency, so invalidation must be handled by client
-      return Folder.deleteFoldersById(ids)
+      return Folder.deleteByIds(ids)
         .map(id => ({
           path: ['foldersById', id],
           value: null
@@ -63,7 +63,7 @@ module.exports = [
   //   route: "foldersById.delete",
   //   call(callPath, ids) {
   //     // foldersList is treated as an explicit dependency, so invalidation is handled by server
-  //     return Folder.deleteFoldersById(ids)
+  //     return Folder.deleteByIds(ids)
   //       .reduce((res, id, idx) => {
   //         // set deleted node to null
   //         res.jsonGraph.foldersById[id] = null;
