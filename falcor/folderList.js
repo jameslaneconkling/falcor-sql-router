@@ -66,21 +66,13 @@ module.exports = [
     route: "folderList.length",
     get(pathSet) {
       return Folder.getCount()
-        .map(data => {
+        .map(count => {
           // return pathValue count
           return {
             path: ['folderList', 'length'],
-            value: data.count
+            value: count
           };
         });
-    }
-  },
-  // CREATE Folder
-  // TODO - handle thisPath and refPath
-  {
-    route: 'folderList',
-    call(callPath, args, refPath, thisPath) {
-
     }
   }
 ];

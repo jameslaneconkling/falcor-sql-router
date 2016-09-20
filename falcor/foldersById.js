@@ -46,7 +46,27 @@ module.exports = [
         });
     }
   },
+  // CREATE Folder
+  // TODO - handle refPath and thisPath
+  {
+    route: 'foldersById[{keys:ids}].createSubFolder',
+    call(callPath, args, refPath, thisPath) {
+      const ids = callPath.ids;
+      const name = args[0];
+
+      return Rx.Observable.from(ids)
+        .concatMap(id => Folder.create(name, id))
+        .map(data => {
+          return {
+            path: ['foldersById', data.id, 'id'],
+            value: data.id
+          };
+        });
+    }
+  },
   // DELETE Folders by ID [implicit]
+  // TODO - this route should be foldersById[{keys:ids}].delete
+  // TODO - handle refPath and thisPath
   {
     route: "foldersById.delete",
     call(callPath, ids) {

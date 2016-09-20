@@ -97,6 +97,23 @@ exports.getByRanges = (ranges, fields) => {
 };
 
 /**
+ * CREATE folder
+ */
+exports.create = (name, parentId) => {
+  return Rx.Observable.create(observer => {
+    db.run(`INSERT INTO folder (name, parentId) VALUES (${name}, ${parentId})`, [], (err) => {
+      if (err) {
+        console.error(err);
+        return observer.onError(err);
+      }
+
+      observer.onNext({id: this.lastID, name, parentId});
+      observer.onCompleted();
+    });
+  });
+};
+
+/**
  * Delete folders by id
  *
  * @param {Array} ids
@@ -123,13 +140,13 @@ exports.deleteByIds = (ids) => {
  */
 exports.getCount = () => {
   return Rx.Observable.create(observer => {
-    db.all(`SELECT count(*) as count FROM folder`, [], (err, rows) => {
+    db.get(`SELECT count(*) as count FROM folder`, [], (err, row) => {
       if (err) {
         console.error(err);
         return observer.onError(err);
       }
 
-      observer.onNext(rows[0]);
+      observer.onNext(row.count);
       observer.onCompleted();
     });
   });
@@ -222,7 +239,7 @@ exports.getSubfoldersByRanges = (parentId, ranges) => {
  */
 exports.getSubfolderCount = (parentId) => {
   return Rx.Observable.create(observer => {
-    db.all(`SELECT count(*) FROM folder WHERE parentId = ${parentId}`, [], (err, rows) => {
+    db.get(`SELECT count(*) FROM folder WHERE parentId = ${parentId}`, [], (err, row) => {
       if (err) {
         console.error(err);
         return observer.onError(err);
@@ -230,7 +247,7 @@ exports.getSubfolderCount = (parentId) => {
 
       observer.onNext({
         parentId,
-        count: rows[0].count
+        count: row.count
       });
 
       observer.onCompleted();
