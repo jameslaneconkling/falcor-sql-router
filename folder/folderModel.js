@@ -8,17 +8,17 @@ range2LimitOffset = range => ({limit: range.to - range.from + 1, offset: range.f
 
 /**
  * Get folders by id
- * 
+ *
  * returns an observable that emits an object for each id requested
  * each emitted object has:
  * - an id key
  * - a row key pointing at a map of fieldName:rowValue pairs, or if id doesn't exist, pointing at null
- * 
+ *
  * {
  *   id: 1,
  *   row: {name: 'Herman Cain', email: 'hcain@verizon.net'}
- * } 
- * 
+ * }
+ *
  * @param {String} ids
  * @param {Array} fields
  * @return {Observable}
@@ -37,7 +37,7 @@ exports.getByIds = (ids, fields) => {
           row: rows.find(row => row.id === id)
         });
       });
-      
+
       observer.onCompleted();
     });
   });
@@ -45,17 +45,17 @@ exports.getByIds = (ids, fields) => {
 
 /**
  * Get folders from list by range
- * 
+ *
  * returns an observable that emits an object for each index in range
  * each emitted object has:
  * - an idx key representing the index w/i the list
  * - a row key pointing to a map of fieldName:rowValue pairs, or if nothing exists at index, pointing at null
- * 
+ *
  * {
  *   idx: 1,
  *   row: {name: 'Herman Cain', email: 'hcain@verizon.net'}
- * } 
- * 
+ * }
+ *
  * @param {Object} range
  * @param {Array} fields
  * @return {Observable}
@@ -69,7 +69,7 @@ exports.getByRange = (range, fields) => {
         console.error(err);
         return observer.onError(err);
       }
-    
+
       range2List(range).forEach((rangeIndex, idx) => {
         observer.onNext({
           idx: rangeIndex,
@@ -84,9 +84,9 @@ exports.getByRange = (range, fields) => {
 
 /**
  * Get folders from list by multiple ranges
- * 
+ *
  * see getByRange()
- * 
+ *
  * @param {Array} ranges
  * @param {Array} fields
  * @return {Observable}
@@ -98,8 +98,8 @@ exports.getByRanges = (ranges, fields) => {
 
 /**
  * Delete folders by id
- * 
- * @params {Array} ids
+ *
+ * @param {Array} ids
  * @return {Observable}
  */
 exports.deleteFoldersById = (ids) => {
@@ -118,6 +118,8 @@ exports.deleteFoldersById = (ids) => {
 
 /**
  * GET folder count
+ *
+ * @return {Observable}
  */
 exports.getCount = () => {
   return Rx.Observable.create(observer => {
@@ -134,7 +136,11 @@ exports.getCount = () => {
 };
 
 /**
- * 
+ * SET folder props
+ *
+ * @param {String} id
+ * @param {Array} fields
+ * @return {Observable}
  */
 exports.setRow = (id, fields) => {
   return Rx.Observable.create(observer => {
@@ -163,10 +169,13 @@ exports.setRow = (id, fields) => {
 };
 
 /**
- * 
+ * GET subfolders by range
+ *
+ * @param {String} parentId
+ * @param {Object} range
+ * @return {Observable}
  */
 exports.getSubfoldersByRange = (parentId, range) => {
-
   return Rx.Observable.create(observer => {
     const {limit, offset} = range2LimitOffset(range);
 
@@ -179,7 +188,7 @@ exports.getSubfoldersByRange = (parentId, range) => {
         console.error(err);
         return observer.onError(err);
       }
-      
+
       childIndices.forEach(idx => {
         observer.onNext({
           idx,
@@ -187,14 +196,18 @@ exports.getSubfoldersByRange = (parentId, range) => {
           row: rows[idx]
         });
       });
-      
+
       observer.onCompleted();
     });
   });
 };
 
 /**
- * 
+ * GET Subfolders by ranges
+ *
+ * @param {String} parentId
+ * @param {Array} ranges
+ * @return {Observable}
  */
 exports.getSubfoldersByRanges = (parentId, ranges) => {
   return Rx.Observable.from(ranges)
@@ -202,25 +215,24 @@ exports.getSubfoldersByRanges = (parentId, ranges) => {
 };
 
 /**
- * 
+ * GET Subfolder count
+ *
+ * @param {String} parentId
+ * @return {Observable}
  */
 exports.getSubfolderCount = (parentId) => {
   return Rx.Observable.create(observer => {
-    // NOTE: this is terribly inefficient - grabs all rows up to the
-    db.all(`SELECT count(*) as count
-            FROM (SELECT * FROM folder WHERE id = ${parentId}) as parent
-            JOIN folder as child
-            ON parent.id = child.parentId`, [], (err, rows) => {
+    db.all(`SELECT count(*) FROM folder WHERE parentId = ${parentId}`, [], (err, rows) => {
       if (err) {
         console.error(err);
         return observer.onError(err);
       }
-      
+
       observer.onNext({
         parentId,
         count: rows[0].count
       });
-      
+
       observer.onCompleted();
     });
   });
