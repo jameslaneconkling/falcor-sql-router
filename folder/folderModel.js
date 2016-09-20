@@ -206,7 +206,7 @@ exports.getSubfoldersByRange = (parentId, range) => {
         return observer.onError(err);
       }
 
-      childIndices.forEach(idx => {
+      range2List(range).forEach(idx => {
         observer.onNext({
           idx,
           parentId,

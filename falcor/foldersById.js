@@ -114,7 +114,7 @@ module.exports = [
       const childRanges = pathSet.childRanges;
 
       return Rx.Observable.from(parentIds)
-        .concatMap(parentId => Folder.getSubfoldersByRange(parentId, childRanges))
+        .concatMap(parentId => Folder.getSubfoldersByRanges(parentId, childRanges))
         .map(data => {
           // if row doesn't exist, return null pathValue
           if (!data.row) {
