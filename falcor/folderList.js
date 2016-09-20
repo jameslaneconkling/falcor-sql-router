@@ -27,40 +27,6 @@ module.exports = [
         });
     }
   },
-  // GET Folders with fields from folderList by index [optimized]
-  {
-    route: "folderList[{ranges:ranges}][{keys:fields}]",
-    get(pathSet) {
-      const ranges = pathSet.ranges;
-      const fields = pathSet.fields;
-
-      return Folder.getByRanges(ranges, fields)
-        .reduce((accumulator, data) => {
-          // if row doesn't exist, return null pathValue
-          if (!data.row) {
-            const missingRowPathValue = {
-              path: ['folderList', data.idx],
-              value: null
-            };
-            return [...accumulator, missingRowPathValue];
-          }
-
-          // return pathValue ref to folder
-          const pathValueRef = {
-            path: ['folderList', data.idx],
-            value: $ref(['foldersById', data.row.id])
-          };
-
-          // return fields by pathValue
-          const pathValuesByField = fields.map(field => ({
-            path: ['foldersById', data.row.id, field],
-            value: data.row[field]
-          }));
-
-          return [...accumulator, pathValueRef, ...pathValuesByField];
-        }, []);
-    }
-  },
   // GET Folders Length
   {
     route: "folderList.length",

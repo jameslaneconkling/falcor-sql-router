@@ -67,6 +67,7 @@ exports.getByRange = (range, fields) => {
   return Rx.Observable.create(observer => {
     const {limit, offset} = range2LimitOffset(range);
 
+    // TODO - only concat id if not present: fields.contains('id') ? fields : fields.concat('id')
     db.all(`SELECT ${fields.concat('id').join(', ')} FROM folder LIMIT ${limit} OFFSET ${offset}`, [], (err, rows) => {
       if (err) {
         return handleError(observer, err);

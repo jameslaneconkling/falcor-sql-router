@@ -2,11 +2,13 @@ const FalcorServer = require('falcor-express');
 const Router = require('falcor-router');
 const foldersById = require('./foldersById');
 const folderList = require('./folderList');
+const folderListOptimized = require('./folderList-optimized');
 const resourceRoutes = require('./resources');
 
 const BaseRouter = Router.createClass([
   ...foldersById,
   ...folderList,
+  ...folderListOptimized,
   ...resourceRoutes
 ]);
 
