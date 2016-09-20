@@ -2,15 +2,24 @@
 	"variables": [],
 	"info": {
 		"name": "Falcor Example Server",
-		"_postman_id": "5f753dd4-a6fe-b8b6-af4c-e9163e768e64",
+		"_postman_id": "f877face-bc2f-0ac3-7c00-dbddd86f66d0",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "GET Folder List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": "const jsonGraph = JSON.parse(responseBody).jsonGraph;\nconst folderList = jsonGraph.folderList;\nconst foldersById = jsonGraph.foldersById;\n\n/**\n * @param jsonGraph         the graph\n * @param collectionName    string name of collection with ref nodes, e.g. 'folderList'\n */\nconst resolveRefs = (jsonGraph, collectionName) => {\n    const collection = jsonGraph[collectionName];\n    \n    return Object.keys(collection)\n        .map(idx => collection[idx])\n        .map(node => {\n            if (!node) {\n                // null node\n                return null;\n            } else if (node.$type === 'ref') {\n                // ref node\n                return _.get(jsonGraph, node.value);\n            } else {\n                // atom or error node\n                return node;\n            }\n        });\n    \n}\n\n\ntests[\"In folderList, Existant nodes have refs\"] = folderList[\"1\"][\"$type\"] === 'ref' &&\n  jsonGraph.folderList[\"2\"][\"$type\"] === 'ref';\n\n\ntests[\"In folderList, non-existant nodes are null\"] = folderList[\"50\"] === null;\n\n\nconst node1 = _.isEqual(_.get(jsonGraph, folderList[\"1\"].value), {\n    id: 1,\n    name: \"root folder\",\n    parentId: null\n});\n\nconst node2 = _.isEqual(_.get(jsonGraph, folderList[\"2\"].value), {\n    id: 2,\n    name: \"folder1\",\n    parentId: 1\n});\n\ntests[\"Node refs resolve to correct values\"] = node1 && node2;\n\n\n    \n"
+					}
+				}
+			],
 			"request": {
-				"url": "http://localhost:3000/api/model.json?paths=[[\"folderList\",{\"from\":4,\"to\":8},[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"folderList\",[{\"from\":1,\"to\":2}, {\"from\":50,\"to\":50}],[\"id\", \"name\", \"parentId\"]]]&method=get",
 				"method": "GET",
 				"header": [
 					{
@@ -30,7 +39,7 @@
 		{
 			"name": "GET Folder List Count",
 			"request": {
-				"url": "http://localhost:3000/api/model.json?paths=[[\"folderList\",\"length\"]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"folderList\",\"length\"]]&method=get",
 				"method": "GET",
 				"header": [
 					{
@@ -50,7 +59,7 @@
 		{
 			"name": "SET Folder by ID ",
 			"request": {
-				"url": "http://localhost:3000/api/model.json",
+				"url": "{{BASEURL}}/api/model.json",
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -77,7 +86,7 @@
 		{
 			"name": "GET Folder by ID",
 			"request": {
-				"url": "http://localhost:3000/api/model.json?paths=[[\"foldersById\",[1, 3, 5, 15],[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"foldersById\",[1, 3, 5, 15],[\"id\", \"name\", \"parentId\"]]]&method=get",
 				"method": "GET",
 				"header": [
 					{
@@ -97,7 +106,7 @@
 		{
 			"name": "GET Folder by ID with Sub Folder",
 			"request": {
-				"url": "http://localhost:3000/api/model.json?paths=[[\"foldersById\",[1, 2], \"name\"],[\"foldersById\",[1, 2],[\"folders\"],{\"to\":3},[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"foldersById\",[1, 2], \"name\"],[\"foldersById\",[1, 2],[\"folders\"],{\"to\":3},[\"id\", \"name\", \"parentId\"]]]&method=get",
 				"method": "GET",
 				"header": [
 					{
@@ -117,7 +126,7 @@
 		{
 			"name": "GET Folder by ID with Sub Folder Count",
 			"request": {
-				"url": "http://localhost:3000/api/model.json?paths=[[\"foldersById\",[2, 3, 4], \"name\"],[\"foldersById\",[2, 3, 4],\"folders\",\"length\"]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"foldersById\",[2, 3, 4], \"name\"],[\"foldersById\",[2, 3, 4],\"folders\",\"length\"]]&method=get",
 				"method": "GET",
 				"header": [
 					{
@@ -137,7 +146,7 @@
 		{
 			"name": "GET Folder List with Sub Folder",
 			"request": {
-				"url": "http://localhost:3000/api/model.json?paths=[[\"folderList\",{\"to\":4}, \"name\"],[\"folderList\",{\"to\":4},[\"folders\"],{\"to\":3},[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"folderList\",{\"to\":1}, \"name\"],[\"folderList\",{\"to\":1},[\"folders\"],{\"to\":2},[\"id\", \"name\", \"parentId\"]]]&method=get",
 				"method": "GET",
 				"header": [
 					{
@@ -157,7 +166,7 @@
 		{
 			"name": "GET ERROR",
 			"request": {
-				"url": "http://localhost:3000/api/model.json?paths=[[\"nonExistentNode\"]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"nonExistentNode\"]]&method=get",
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -171,7 +180,7 @@
 		{
 			"name": "SET ERROR",
 			"request": {
-				"url": "http://localhost:3000/api/model.json",
+				"url": "{{BASEURL}}/api/model.json",
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -198,7 +207,7 @@
 		{
 			"name": "Call ERROR",
 			"request": {
-				"url": "http://localhost:3000/api/model.json",
+				"url": "{{BASEURL}}/api/model.json",
 				"method": "POST",
 				"header": [],
 				"body": {
