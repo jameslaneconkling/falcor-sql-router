@@ -4,11 +4,14 @@ const app = require('../app');
 const db = require('../db');
 
 module.exports = () => {
-  // test('["folderList", ...] Test Setup', assert => {
-  //   require('../db/seed')(db, () => {
-  //     assert.end();
-  //   });
-  // });
+  test('["folderList", ...] Test Setup', assert => {
+    require('../db/seed')(db, err => {
+      if (err) {
+        assert.fail(err);
+      }
+      assert.end();
+    });
+  });
 
   test('["foldersById", ...] Should return folders with ID 1, 3, and 4', assert => {
     const method = 'get';
@@ -43,5 +46,14 @@ module.exports = () => {
         assert.deepEqual(res.body, expectedResponse);
         assert.end();
       });
+  });
+
+  test('["folderList", ...] Test Teardown', assert => {
+    require('../db/clear')(db, err => {
+      if (err) {
+        assert.fail(err);
+      }
+      assert.end();
+    });
   });
 };

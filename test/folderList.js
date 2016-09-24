@@ -5,8 +5,12 @@ const db = require('../db');
 
 module.exports = () => {
   test('["folderList", ...] Test Setup', assert => {
-    require('../db/seed')(db);
-    assert.end();
+    require('../db/seed')(db, err => {
+      if (err) {
+        assert.fail(err);
+      }
+      assert.end();
+    });
   });
 
   test('["folderList", ...] Should return folders at index 1 and 2', assert => {
@@ -76,9 +80,12 @@ module.exports = () => {
       });
   });
 
-  // test('["folderList", ...] Test Teardown', assert => {
-  //   require('../db/drop')(db, () => {
-  //     assert.end();
-  //   });
-  // });
+  test('["folderList", ...] Test Teardown', assert => {
+    require('../db/clear')(db, err => {
+      if (err) {
+        assert.fail(err);
+      }
+      assert.end();
+    });
+  });
 };
