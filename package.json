@@ -9,9 +9,9 @@
     "initDB": "node lib/init_db.js",
     "reinitDB": "rm ./db.sql && node lib/init_db.js",
     "seedDB": "node lib/seed_db.js",
-    "test": "NODE_ENV=test node test/ | faucet || true"
+    "test": "NODE_ENV=test node test/ | tap-diff || true"
   },
-  "author": "",
+  "author": "jameslaneconkling",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.15.2",

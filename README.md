@@ -29,7 +29,7 @@ To reinitialize the db, bounce the server.
 ### Test
 If not globally installed, install faucet
 ```bash
-npm install -g faucet
+npm install -g tap-diff
 ```
 
 Then run
