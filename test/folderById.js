@@ -79,7 +79,7 @@ module.exports = () => {
     const method = 'get';
     const paths = [
       ["foldersById", [1, 2], "name"],
-      ["foldersById",[1, 2], "folders", {"to":2}, ["id", "name", "parentId"]]
+      ["foldersById", [1, 2], "folders", {"to":2}, ["id", "name", "parentId"]]
     ];
     const expectedResponse = {
       "jsonGraph": {

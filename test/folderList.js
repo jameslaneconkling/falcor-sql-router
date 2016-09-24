@@ -11,7 +11,7 @@ module.exports = () => {
   const db = dbConstructor();
   const app = appConstructor(db);
 
-  test('["folderList", ...] setup', assert => {
+  test('setup', assert => {
     require('../db/seed')(db, err => {
       if (err) {
         assert.fail(err);
@@ -21,27 +21,27 @@ module.exports = () => {
   });
 
 
-  test('["folderList", ...] Should return folders at index 1 and 2', assert => {
+  test('folderList: Should return folders from beginning of list', assert => {
     const method = 'get';
     const paths = [
-      ["folderList", [{"from":1, "to":2}], ["id", "name", "parentId"]]
+      ["folderList", {"to": 1}, ["id", "name", "parentId"]]
     ];
     const expectedResponse = {
-      "jsonGraph": {
-        "folderList": {
-          "1": { "$type": "ref", "value": [ "foldersById", 2 ] },
-          "2": { "$type": "ref", "value": [ "foldersById", 3 ] }
+      jsonGraph: {
+        folderList: {
+          0: { $type: "ref", value: [ "foldersById", 1 ] },
+          1: { $type: "ref", value: [ "foldersById", 2 ] }
         },
-        "foldersById": {
-          "2": {
-            "id": 2,
-            "name": "folder1",
-            "parentId": 1
+        foldersById: {
+          1: {
+            id: 1,
+            name: "root folder",
+            parentId: null
           },
-          "3": {
-            "id": 3,
-            "name": "folder2",
-            "parentId": 1
+          2: {
+            id: 2,
+            name: "folder1",
+            parentId: 1
           }
         }
       }
@@ -56,27 +56,33 @@ module.exports = () => {
   });
 
 
-  test('["folderList", ...] Should return folders at index 0 and 1', assert => {
+  test('folderList: should return non-continguous folders from middle of list', assert => {
     const method = 'get';
     const paths = [
-      ["folderList", [{"from":0, "to":1}], ["id", "name", "parentId"]]
+      ["folderList", [{"from":2, "to":3}, 5], ["id", "name", "parentId"]]
     ];
     const expectedResponse = {
-      "jsonGraph": {
-        "folderList": {
-          "0": { "$type": "ref", "value": [ "foldersById", 1 ] },
-          "1": { "$type": "ref", "value": [ "foldersById", 2 ] }
+      jsonGraph: {
+        folderList: {
+          2: { $type: "ref", value: [ "foldersById", 3 ] },
+          3: { $type: "ref", value: [ "foldersById", 4 ] },
+          5: { $type: "ref", value: [ "foldersById", 6 ] },
         },
-        "foldersById": {
-          "1": {
-            "id": 1,
-            "name": "root folder",
-            "parentId": null
+        foldersById: {
+          3: {
+            id: 3,
+            name: "folder2",
+            parentId: 1
           },
-          "2": {
-            "id": 2,
-            "name": "folder1",
-            "parentId": 1
+          4: {
+            id: 4,
+            name: "folder3",
+            parentId: 1
+          },
+          6: {
+            id: 6,
+            name: "folder1.2",
+            parentId: 2
           }
         }
       }
@@ -91,15 +97,36 @@ module.exports = () => {
   });
 
 
-  test('["folderList", ...] Should return null for folders that do not exist', assert => {
+  test('folderList: Should return null for folders that do not exist', assert => {
     const method = 'get';
     const paths = [
       ["folderList", 100, ["id", "name", "parentId"]]
     ];
     const expectedResponse = {
-      "jsonGraph": {
-        "folderList": {
-          "100": null
+      jsonGraph: {
+        folderList: {
+          100: null
+        }
+      }
+    };
+
+    request(app)
+      .get(`/api/model.json?method=${method}&paths=${JSON.stringify(paths)}`)
+      .end((err, res) => {
+        assert.deepEqual(res.body, expectedResponse);
+        assert.end();
+      });
+  });
+
+  test('folderList: Should return folder count', assert => {
+    const method = 'get';
+    const paths = [
+      ["folderList", "length"]
+    ];
+    const expectedResponse = {
+      jsonGraph: {
+        folderList: {
+          length: 9
         }
       }
     };
