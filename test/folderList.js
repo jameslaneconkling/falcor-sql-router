@@ -1,10 +1,15 @@
 const test = require('tape');
 const request = require('supertest');
-const app = require('../app');
-const db = require('../db');
+const dbConstructor = require('../db');
+const appConstructor = require('../app');
 
 module.exports = () => {
-  test('["folderList", ...] Test Setup', assert => {
+  // TODO - these probably need callbacks to ensure they complete before tests run
+  // TODO - simplify dbConstructor so it can be passed a config: in-memory/file seedSQL/not
+  const db = dbConstructor();
+  const app = appConstructor(db);
+
+  test('["folderList", ...] setup', assert => {
     require('../db/seed')(db, err => {
       if (err) {
         assert.fail(err);
@@ -78,14 +83,5 @@ module.exports = () => {
         assert.deepEqual(res.body, expectedResponse);
         assert.end();
       });
-  });
-
-  test('["folderList", ...] Test Teardown', assert => {
-    require('../db/clear')(db, err => {
-      if (err) {
-        assert.fail(err);
-      }
-      assert.end();
-    });
   });
 };

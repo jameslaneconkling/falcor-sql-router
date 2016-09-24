@@ -1,40 +1,39 @@
 const FalcorServer = require('falcor-express');
 const Router = require('falcor-router');
-const foldersById = require('./foldersById');
-const folderList = require('./folderList');
-const folderListOptimized = require('./folderList-optimized');
-const resourceRoutes = require('./resources');
 
-const BaseRouter = Router.createClass([
-  ...foldersById,
-  ...folderList,
-  ...folderListOptimized,
-  ...resourceRoutes
-]);
+module.exports = (db) => {
+  const BaseRouter = Router.createClass([
+    ...require('./foldersById')(db),
+    ...require('./folderList')(db),
+    ...require('./folderList-optimized')(db),
+    ...require('./resources')(db)
+  ]);
 
-// To subclass:
-// const SubRouter = function(prop) {
-//   BaseRouter.call(this);
-//   this.prop = prop;
-// };
-//
-// SubRouter.prototype = Object.create(BaseRouter.prototype);
+  // To subclass:
+  // const SubRouter = function(prop) {
+  //   BaseRouter.call(this);
+  //   this.prop = prop;
+  // };
+  //
+  // SubRouter.prototype = Object.create(BaseRouter.prototype);
 
-module.exports = FalcorServer.dataSourceRoute((req, res) => {
-  res.type('json');
-  return new BaseRouter();
+  return FalcorServer.dataSourceRoute((req, res) => {
+    res.type('json');
+    return new BaseRouter();
 
-  // mock
-  // return new falcor.Model({
-  //   cache: {
-  //     foldersById: {
-  //       1: {
-  //         name: 'folder1',
-  //       },
-  //       2: {
-  //         name: 'folder2',
-  //       }
-  //     }
-  //   }
-  // }).asDataSource();
-});
+    // mock
+    // return new falcor.Model({
+    //   cache: {
+    //     foldersById: {
+    //       1: {
+    //         name: 'folder1',
+    //       },
+    //       2: {
+    //         name: 'folder2',
+    //       }
+    //     }
+    //   }
+    // }).asDataSource();
+  });
+};
+

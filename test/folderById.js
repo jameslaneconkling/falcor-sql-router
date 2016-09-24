@@ -1,10 +1,13 @@
 const test = require('tape');
 const request = require('supertest');
-const app = require('../app');
-const db = require('../db');
+const dbConstructor = require('../db');
+const appConstructor = require('../app');
 
 module.exports = () => {
-  test('["folderList", ...] Test Setup', assert => {
+  const db = dbConstructor();
+  const app = appConstructor(db);
+
+  test('["foldersById", ...] setup', assert => {
     require('../db/seed')(db, err => {
       if (err) {
         assert.fail(err);
@@ -46,14 +49,5 @@ module.exports = () => {
         assert.deepEqual(res.body, expectedResponse);
         assert.end();
       });
-  });
-
-  test('["folderList", ...] Test Teardown', assert => {
-    require('../db/clear')(db, err => {
-      if (err) {
-        assert.fail(err);
-      }
-      assert.end();
-    });
   });
 };

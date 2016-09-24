@@ -1,35 +1,39 @@
-const app = require('express')();
+const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cors = require('cors');
 
-// Middleware
-app.use(morgan('combined'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors({
-  origin: 'http://localhost:4200',
-  credentials: true
-}));
+module.exports = (db) => {
+  const app = express();
 
-// Static client files
-// app.use(express.static(__dirname + '/public'));
+  // Middleware
+  app.use(morgan('combined'));
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(cors({
+    origin: 'http://localhost:4200',
+    credentials: true
+  }));
 
-// REST endpoints
-app.use('/api/resource', require('./rest/routes/resource'));
-app.use('/api/folder', require('./rest/routes/folder'));
+  // Static client files
+  // app.use(express.static(__dirname + '/public'));
 
-// Falcor endpoint
-app.use('/api/model.json', require('./falcor'));
+  // REST endpoints
+  app.use('/api/resource', require('./rest/routes/resource'));
+  app.use('/api/folder', require('./rest/routes/folder'));
 
-// Error handling
-app.use((err, req, res, next) => {
-  console.error('Error on:', req, err);
-  res.status(500).send({
-    name: err.name,
-    message: err.message,
-    stack: err.stack
+  // Falcor endpoint
+  app.use('/api/model.json', require('./falcor')(db));
+
+  // Error handling
+  app.use((err, req, res, next) => {
+    console.error('Error on:', req, err);
+    res.status(500).send({
+      name: err.name,
+      message: err.message,
+      stack: err.stack
+    });
   });
-});
 
-module.exports = app;
+  return app;
+};
