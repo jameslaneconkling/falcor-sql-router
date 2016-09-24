@@ -5,7 +5,9 @@ const {
 } = require('../utils/falcor');
 
 handleError = (observer, err) => {
-  console.error(err);
+  if (process.env.NODE_ENV !== 'test') {
+    console.error(err);
+  }
   return observer.onError(err);
 };
 
