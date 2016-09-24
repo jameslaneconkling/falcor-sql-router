@@ -1,7 +1,5 @@
-const fs = require('fs');
-
 module.exports = (db, cb=() => {}) => {
-  db.run(fs.readFileSync(__dirname + '/sql/seed.sql', 'utf8'), [], err => {
+  db.run(`DROP TABLE folder; DROP TABLE resource;`, [], err => {
     if (err) {
       console.error(err);
       return cb(err);

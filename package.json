@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=development nodemon index.js || node index.js",
+    "dev": "if which nodemon ; then NODE_ENV=development nodemon index.js ; else NODE_ENV=development node index.js ; fi",
     "prod": "NODE_ENV=production node index.js",
     "initDB": "node lib/init_db.js",
     "reinitDB": "rm ./db.sql && node lib/init_db.js",
     "seedDB": "node lib/seed_db.js",
-    "test": "node test/ | faucet || true"
+    "test": "NODE_ENV=test node test/ | faucet || true"
   },
   "author": "",
   "license": "ISC",
