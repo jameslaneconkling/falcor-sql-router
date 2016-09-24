@@ -9,7 +9,7 @@
     "initDB": "node lib/init_db.js",
     "reinitDB": "rm ./db.sql && node lib/init_db.js",
     "seedDB": "node lib/seed_db.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/ | faucet || true"
   },
   "author": "",
   "license": "ISC",
@@ -24,5 +24,9 @@
     "ramda": "^0.21.0",
     "rx": "^2.5.3",
     "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master"
+  },
+  "devDependencies": {
+    "supertest": "^2.0.0",
+    "tape": "^4.6.0"
   }
 }

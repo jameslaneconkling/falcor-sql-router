@@ -17,8 +17,19 @@ Database is initialized and seeded automatically.
 
 To reinitialize the db, bounce the server.
 
+### Test
+If not globally installed, install faucet
+```bash
+npm install -g faucet
+```
+
+Then run
+```bash
+npm run test
+```
+
 ### Serve
-To run against a persistent DB, run 
+To run against a persistent DB, run
 ```bash
 npm run initDB
 npm run seedDB
