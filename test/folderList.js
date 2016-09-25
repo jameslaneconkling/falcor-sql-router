@@ -1,7 +1,9 @@
 const test = require('tape');
-const request = require('supertest');
 const dbConstructor = require('../db');
 const appConstructor = require('../app');
+const {
+  runTest
+} = require('./test-utils');
 
 module.exports = () => {
   // TODO - these probably need callbacks to ensure they complete before tests run
@@ -47,12 +49,7 @@ module.exports = () => {
       }
     };
 
-    request(app)
-      .get(`/api/model.json?method=${method}&paths=${JSON.stringify(paths)}`)
-      .end((err, res) => {
-        assert.deepEqual(res.body, expectedResponse);
-        assert.end();
-      });
+    runTest(app, assert, method, paths, expectedResponse);
   });
 
 
@@ -88,12 +85,7 @@ module.exports = () => {
       }
     };
 
-    request(app)
-      .get(`/api/model.json?method=${method}&paths=${JSON.stringify(paths)}`)
-      .end((err, res) => {
-        assert.deepEqual(res.body, expectedResponse);
-        assert.end();
-      });
+    runTest(app, assert, method, paths, expectedResponse);
   });
 
 
@@ -110,12 +102,7 @@ module.exports = () => {
       }
     };
 
-    request(app)
-      .get(`/api/model.json?method=${method}&paths=${JSON.stringify(paths)}`)
-      .end((err, res) => {
-        assert.deepEqual(res.body, expectedResponse);
-        assert.end();
-      });
+    runTest(app, assert, method, paths, expectedResponse);
   });
 
   test('folderList: Should return folder count', assert => {
@@ -131,11 +118,6 @@ module.exports = () => {
       }
     };
 
-    request(app)
-      .get(`/api/model.json?method=${method}&paths=${JSON.stringify(paths)}`)
-      .end((err, res) => {
-        assert.deepEqual(res.body, expectedResponse);
-        assert.end();
-      });
+    runTest(app, assert, method, paths, expectedResponse);
   });
 };
