@@ -63,7 +63,7 @@ module.exports = () => {
         folderList: {
           2: { $type: "ref", value: [ "foldersById", 3 ] },
           3: { $type: "ref", value: [ "foldersById", 4 ] },
-          5: { $type: "ref", value: [ "foldersById", 6 ] },
+          5: { $type: "ref", value: [ "foldersById", 6 ] }
         },
         foldersById: {
           3: {
@@ -105,6 +105,7 @@ module.exports = () => {
     runTest(app, assert, method, paths, expectedResponse);
   });
 
+
   test('folderList: Should return folder count', assert => {
     const method = 'get';
     const paths = [
@@ -114,6 +115,44 @@ module.exports = () => {
       jsonGraph: {
         folderList: {
           length: 9
+        }
+      }
+    };
+
+    runTest(app, assert, method, paths, expectedResponse);
+  });
+
+
+  test('folderList: Should return folder with subfolders', assert => {
+    const method = 'get';
+    const paths = [
+      ["folderList", 0, "name"],
+      ["folderList", 0, "folders", {"to": 1}, ["id", "name", "parentId"]]
+    ];
+    const expectedResponse = {
+      "jsonGraph": {
+        "folderList": {
+          "0": { "$type": "ref", "value": ["foldersById", 1] }
+        },
+        "foldersById": {
+          "1": {
+            "folders": {
+              "0": { "$type": "ref", "value": ["foldersById", 2] },
+              "1": { "$type": "ref", "value": ["foldersById", 3] }
+            },
+            "name": "root folder",
+            "id": 1
+          },
+          "2": {
+            "id": 2,
+            "name": "folder1",
+            "parentId": 1
+          },
+          "3": {
+            "id": 3,
+            "name": "folder2",
+            "parentId": 1
+          }
         }
       }
     };

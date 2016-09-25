@@ -68,7 +68,7 @@ module.exports = () => {
   });
 
 
-  test('foldersById: Should return folder with sub folders', assert => {
+  test('foldersById: Should return folder with subfolders', assert => {
     const method = 'get';
     const paths = [
       ["foldersById", [1, 2], "name"],
@@ -117,7 +117,7 @@ module.exports = () => {
   });
 
 
-  test('foldersById: Should return folder with sub folder count', assert => {
+  test('foldersById: Should return folder with subfolder count', assert => {
     const method = 'get';
     const paths = [
       ["foldersById",[2, 3, 4], "name"],
