@@ -32,7 +32,7 @@ module.exports = db => {
      */
     getByIds(ids, fields) {
       return Rx.Observable.create(observer => {
-        db.all(`SELECT ${fields.concat('id')} FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
+        db.all(`SELECT ${fields.concat('id')} FROM folder WHERE id IN (${ids.map(id => `'${id}'`).join(', ')})`, [], (err, rows) => {
           if (err) {
             return handleError(observer, err);
           }

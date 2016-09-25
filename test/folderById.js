@@ -81,8 +81,9 @@ module.exports = () => {
             "name": "root folder",
             "id": 1,
             "folders": {
-              "0": { "$type": "ref", "value": [ "foldersById", 2] },
-              "1": { "$type": "ref", "value": [ "foldersById", 3] }
+              "0": { "$type": "ref", "value": ["foldersById", 2] },
+              "1": { "$type": "ref", "value": ["foldersById", 3] },
+              "2": { "$type": "ref", "value": ["foldersById", 4] }
             }
           },
           "2": {
@@ -90,13 +91,19 @@ module.exports = () => {
             "id": 2,
             "parentId": 1,
             "folders": {
-              "0": { "$type": "ref", "value": [ "foldersById", 5] },
-              "1": { "$type": "ref", "value": [ "foldersById", 6] }
+              "0": { "$type": "ref", "value": ["foldersById", 5] },
+              "1": { "$type": "ref", "value": ["foldersById", 6] },
+              "2": null
             }
           },
           "3": {
             "id": 3,
             "name": "folder2",
+            "parentId": 1
+          },
+          "4": {
+            "id": 4,
+            "name": "folder3",
             "parentId": 1
           },
           "5": {
