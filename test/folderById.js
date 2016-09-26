@@ -7,17 +7,11 @@ const {
 
 
 module.exports = () => {
-  const db = dbConstructor();
-  const app = appConstructor(db);
-
-  test('foldersById: setup', assert => {
-    require('../db/seed')(db, err => {
-      if (err) {
-        assert.fail(err);
-      }
-      assert.end();
-    });
+  const db = dbConstructor({
+    file: false,
+    seed: `${__dirname}/../db/sql/seed.sql`
   });
+  const app = appConstructor(db);
 
 
   test('foldersById: Should return folders with ID 1, 3, and 4', assert => {

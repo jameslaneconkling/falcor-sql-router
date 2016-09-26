@@ -1,16 +1,22 @@
 const sqlite3 = require('sqlite3').verbose();
-const dbFile = './db.sql';
 
-module.exports = () => {
-  const db = process.env.NODE_ENV === 'production' ?
-              new sqlite3.Database(dbFile) :
-              new sqlite3.Database(':memory:');
+/**
+ * DatabaseDriver Constructor
+ *
+ * @param {Object} config
+ *   file {String | Boolean} path to sqlite db file.  pass false to run in memory
+ *   seed {String | Boolean} path to db seed file.  pass false to not seed the db
+ *
+ * @return database driver object
+ */
+module.exports = ({file, seed}) => {
+  const db = file ? new sqlite3.Database(file) : new sqlite3.Database(':memory:');
 
-  if (process.env.NODE_ENV === 'development') {
+  if (!file) {
     require('./init')(db);
-    require('./seed')(db);
-  } else if (process.env.NODE_ENV === 'test') {
-    require('./init')(db);
+  }
+  if (seed) {
+    require('./seed')(db, seed);
   }
 
   return db;

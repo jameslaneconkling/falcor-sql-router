@@ -7,20 +7,12 @@ const {
 
 module.exports = () => {
   // TODO - these probably need callbacks to ensure they complete before tests run
-  // TODO - simplify dbConstructor so it can be passed a config: in-memory/file seedSQL/not
   // TODO - import/build client falcor parsing lib to recreate response
-  // TODO - switch to tap diff: https://github.com/axross/tap-diff
-  const db = dbConstructor();
-  const app = appConstructor(db);
-
-  test('setup', assert => {
-    require('../db/seed')(db, err => {
-      if (err) {
-        assert.fail(err);
-      }
-      assert.end();
-    });
+  const db = dbConstructor({
+    file: false,
+    seed: `${__dirname}/../db/sql/seed.sql`
   });
+  const app = appConstructor(db);
 
 
   test('folderList: Should return folders from beginning of list', assert => {
