@@ -1,2 +1,3 @@
-require('./folderList')();
-require('./folderById')();
+// require('./exampleTest');
+require('./folderById');
+require('./folderList');

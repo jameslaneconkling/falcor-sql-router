@@ -1,157 +1,172 @@
 const test = require('tape');
+const request = require('supertest');
+const falcor = require('falcor');
 const dbConstructor = require('../db');
 const appConstructor = require('../app');
-const {
-  runTest
-} = require('./test-utils');
+const SuperTestDataSource = require('./utils/SuperTestDataSource');
+const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
 
 
-module.exports = () => {
-  const db = dbConstructor({
-    file: false,
-    seed: `${__dirname}/../db/sql/seed.sql`
-  });
+test('foldersById: Should return folders with ID 1, 3, and 4', assert => {
+  assert.plan(1);
+  const db = dbConstructor({seed: seedFilePath});
   const app = appConstructor(db);
+  const model = new falcor.Model({
+    source: new SuperTestDataSource('/api/model.json', app)
+  });
+  const expectedResponse = {
+    "foldersById": {
+      "1": {
+        "id": 1,
+        "name": "root folder",
+        "parentId": null
+      },
+      "3": {
+        "id": 3,
+        "name": "folder2",
+        "parentId": 1
+      },
+      "4": {
+        "id": 4,
+        "name": "folder3",
+        "parentId": 1
+      }
+    }
+  };
+
+  model.get(["foldersById", [1, 3, 4], ["id", "name", "parentId"]])
+    .subscribe(res => {
+      assert.deepEqual(res.json, expectedResponse);
+    }, err => {
+      assert.fail(err);
+    });
+});
 
 
-  test('foldersById: Should return folders with ID 1, 3, and 4', assert => {
-    const method = 'get';
-    const paths = [
-      ["foldersById", [1, 3, 4], ["id", "name", "parentId"]]
-    ];
-    const expectedResponse = {
-      "jsonGraph": {
-        "foldersById": {
-          "1": {
-            "id": 1,
-            "name": "root folder",
-            "parentId": null
+test('foldersById: Should return null for folder that doesn\'t exist', assert => {
+  assert.plan(1);
+  const db = dbConstructor({seed: seedFilePath});
+  const app = appConstructor(db);
+  const model = new falcor.Model({
+    source: new SuperTestDataSource('/api/model.json', app)
+  });
+  const expectedResponse = {
+    "foldersById": {
+      "nope": null
+    }
+  };
+
+  model.get(["foldersById", "nope", ["id", "name", "parentId"]])
+    .subscribe(res => {
+      assert.deepEqual(res.json, expectedResponse);
+    }, err => {
+      assert.fail(err);
+    });
+});
+
+
+test('foldersById: Should return folder with subfolders', assert => {
+  assert.plan(1);
+  const db = dbConstructor({seed: seedFilePath});
+  const app = appConstructor(db);
+  const model = new falcor.Model({
+    source: new SuperTestDataSource('/api/model.json', app)
+  });
+  const expectedResponse = {
+    "foldersById": {
+      "1": {
+        "name": "root folder",
+        "id": 1,
+        "folders": {
+          "0": {
+            "name": "folder1",
+            "id": 2,
+            "parentId": 1,
           },
-          "3": {
+          "1": {
             "id": 3,
             "name": "folder2",
             "parentId": 1
           },
-          "4": {
+          "2": {
             "id": 4,
             "name": "folder3",
             "parentId": 1
           }
         }
-      }
-    };
-
-    runTest(app, assert, method, paths, expectedResponse);
-  });
-
-
-  test('foldersById: Should return null for folder that doesn\'t exist', assert => {
-    const method = 'get';
-    const paths = [
-      ["foldersById", "nope", ["id", "name", "parentId"]]
-    ];
-    const expectedResponse = {
-      "jsonGraph": {
-        "foldersById": {
-          "nope": null
-        }
-      }
-    };
-
-    runTest(app, assert, method, paths, expectedResponse);
-  });
-
-
-  test('foldersById: Should return folder with subfolders', assert => {
-    const method = 'get';
-    const paths = [
-      ["foldersById", [1, 2], "name"],
-      ["foldersById", [1, 2], "folders", {"to":2}, ["id", "name", "parentId"]]
-    ];
-    const expectedResponse = {
-      "jsonGraph": {
-        "foldersById": {
-          "1": {
-            "name": "root folder",
-            "id": 1,
-            "folders": {
-              "0": { "$type": "ref", "value": ["foldersById", 2] },
-              "1": { "$type": "ref", "value": ["foldersById", 3] },
-              "2": { "$type": "ref", "value": ["foldersById", 4] }
-            }
-          },
-          "2": {
-            "name": "folder1",
-            "id": 2,
-            "parentId": 1,
-            "folders": {
-              "0": { "$type": "ref", "value": ["foldersById", 5] },
-              "1": { "$type": "ref", "value": ["foldersById", 6] },
-              "2": null
-            }
-          },
-          "3": {
-            "id": 3,
-            "name": "folder2",
-            "parentId": 1
-          },
-          "4": {
-            "id": 4,
-            "name": "folder3",
-            "parentId": 1
-          },
-          "5": {
+      },
+      "2": {
+        "name": "folder1",
+        "id": 2,
+        "folders": {
+          "0": {
             "id": 5,
             "name": "folder1.1",
             "parentId": 2
           },
-          "6": {
+          "1": {
             "id": 6,
             "name": "folder1.2",
             "parentId": 2
-          }
+          },
+          "2": null
         }
       }
-    };
+    }
+  };
 
-    runTest(app, assert, method, paths, expectedResponse);
+  model.get(
+    ["foldersById", [1, 2], ["id", "name"]],
+    ["foldersById", [1, 2], "folders", {"to":2}, ["id", "name", "parentId"]]
+  )
+    .subscribe(res => {
+      assert.deepEqual(res.json, expectedResponse);
+    }, err => {
+      assert.fail(err);
+    });
+});
+
+
+test('foldersById: Should return folder with subfolder count', assert => {
+  assert.plan(1);
+  const db = dbConstructor({seed: seedFilePath});
+  const app = appConstructor(db);
+  const model = new falcor.Model({
+    source: new SuperTestDataSource('/api/model.json', app)
   });
-
-
-  test('foldersById: Should return folder with subfolder count', assert => {
-    const method = 'get';
-    const paths = [
-      ["foldersById",[2, 3, 4], "name"],
-      ["foldersById",[2, 3, 4], "folders", "length"]
-    ];
-    const expectedResponse = {
-      "jsonGraph": {
-        "foldersById": {
-          "2": {
-            "name": "folder1",
-            "id": 2,
-            "folders": {
-              "length": 2
-            }
-          },
-          "3": {
-            "name": "folder2",
-            "id": 3,
-            "folders": {
-              "length": 2
-            }
-          },
-          "4": {
-            "name": "folder3",
-            "id": 4,
-            "folders": {
-              "length": 1
-            }
-          }
+  const expectedResponse = {
+    "foldersById": {
+      "2": {
+        "name": "folder1",
+        "id": 2,
+        "folders": {
+          "length": 2
+        }
+      },
+      "3": {
+        "name": "folder2",
+        "id": 3,
+        "folders": {
+          "length": 2
+        }
+      },
+      "4": {
+        "name": "folder3",
+        "id": 4,
+        "folders": {
+          "length": 1
         }
       }
-    };
+    }
+  };
 
-    runTest(app, assert, method, paths, expectedResponse);
-  });
-};
+  model.get(
+    ["foldersById",[2, 3, 4], ["id", "name"]],
+    ["foldersById",[2, 3, 4], "folders", "length"]
+  )
+    .subscribe(res => {
+      assert.deepEqual(res.json, expectedResponse);
+    }, err => {
+      assert.fail(err);
+    });
+});

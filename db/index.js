@@ -9,7 +9,7 @@ const sqlite3 = require('sqlite3').verbose();
  *
  * @return database driver object
  */
-module.exports = ({file, seed}) => {
+module.exports = ({file = false, seed = false}) => {
   const db = file ? new sqlite3.Database(file) : new sqlite3.Database(':memory:');
 
   if (!file) {
