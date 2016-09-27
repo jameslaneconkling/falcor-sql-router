@@ -55,6 +55,7 @@ module.exports = class SuperTestDataSource {
     return Rx.Observable.create(observer => {
       request(this.app)
         .post(this.url)
+        .type('form')
         .send({
           method: 'set',
           jsonGraph: jsonGraphEnvelope
@@ -74,6 +75,7 @@ module.exports = class SuperTestDataSource {
     return Rx.Observable.create(observer => {
       request(this.app)
         .post(this.url)
+        .type('form')
         .send({
           method: 'call',
           callPath,
