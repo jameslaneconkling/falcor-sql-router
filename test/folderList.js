@@ -151,4 +151,28 @@ module.exports = () => {
 
     runTest(app, assert, method, paths, expectedResponse);
   });
+
+
+  test('folderList: Should update folder name', assert => {
+    const method = 'set';
+    const paths = [
+      ["folderList", 1, "folder1 edit1"]
+    ];
+    const expectedResponse = {};
+
+    assert.fail('todo');
+    assert.end();
+  });
+
+
+  test('folderList: Should delete folder', assert => {
+    assert.fail('todo');
+    assert.end();
+  });
+
+
+  test('folderList: Should create new folder', assert => {
+    assert.fail('todo');
+    assert.end();
+  });
 };
