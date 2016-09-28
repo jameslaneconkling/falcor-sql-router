@@ -1,3 +1,6 @@
-// require('./exampleTest');
-require('./folderById');
-require('./folderList');
+require('./getFolderById');
+require('./setFolderById');
+require('./callFolderById');
+require('./getFolderList');
+require('./setFolderList');
+require('./callFolderList');
