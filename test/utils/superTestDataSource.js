@@ -55,10 +55,10 @@ module.exports = class SuperTestDataSource {
     return Rx.Observable.create(observer => {
       request(this.app)
         .post(this.url)
-        .type('form')
+        .set('Content-Type', 'application/x-www-form-urlencoded')
         .send({
           method: 'set',
-          jsonGraph: jsonGraphEnvelope
+          jsonGraph: JSON.stringify(jsonGraphEnvelope)
         })
         .end((err, res) => {
           if (err) {
@@ -75,13 +75,13 @@ module.exports = class SuperTestDataSource {
     return Rx.Observable.create(observer => {
       request(this.app)
         .post(this.url)
-        .type('form')
+        .set('Content-Type', 'application/x-www-form-urlencoded')
         .send({
           method: 'call',
-          callPath,
-          arguments: args,
-          pathSuffixes: refPath,
-          paths: thisPath
+          callPath: JSON.stringify(callPath),
+          arguments: JSON.stringify(args),
+          pathSuffixes: JSON.stringify(refPath),
+          paths: JSON.stringify(thisPath)
         })
         .end((err, res) => {
           if (err) {
