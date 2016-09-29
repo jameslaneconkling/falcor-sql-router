@@ -12,7 +12,7 @@ handleError = (observer, err) => {
 };
 
 module.exports = db => {
-  const model = {
+  const Folder = {
     /**
      * Get folders by id
      *
@@ -99,7 +99,7 @@ module.exports = db => {
      */
     getByRanges(ranges, fields) {
       return Rx.Observable.from(ranges)
-        .concatMap(range => model.getByRange(range, fields));
+        .concatMap(range => Folder.getByRange(range, fields));
     },
 
     /**
@@ -107,7 +107,8 @@ module.exports = db => {
      */
     create(name, parentId) {
       return Rx.Observable.create(observer => {
-        db.run(`INSERT INTO folder (name, parentId) VALUES (${name}, ${parentId})`, [], (err) => {
+        // create folder
+        db.run(`INSERT INTO folder (name, parentId) VALUES ('${name}', '${parentId}')`, [], function(err) {
           if (err) {
             return handleError(observer, err);
           }
@@ -229,7 +230,7 @@ module.exports = db => {
      */
     getSubfoldersByRanges(parentId, ranges) {
       return Rx.Observable.from(ranges)
-        .concatMap(range => model.getSubfoldersByRange(parentId, range));
+        .concatMap(range => Folder.getSubfoldersByRange(parentId, range));
     },
 
     /**
@@ -256,5 +257,5 @@ module.exports = db => {
     }
   };
 
-  return model;
+  return Folder;
 };
