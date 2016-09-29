@@ -135,7 +135,6 @@ module.exports = db => {
       }
     },
     // CREATE Folder
-    // TODO - handle refPath
     {
       route: 'foldersById[{keys:ids}].folders.createSubFolder',
       call(callPath, args, refPaths, thisPaths) {
