@@ -3,7 +3,7 @@ const request = require('supertest');
 const falcor = require('falcor');
 const dbConstructor = require('../db');
 const appConstructor = require('../app');
-const SuperTestDataSource = require('./utils/SuperTestDataSource');
+const SuperTestDataSource = require('./utils/superTestDataSource');
 const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
 
 
