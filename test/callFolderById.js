@@ -51,6 +51,9 @@ test('foldersById: Should create one new folder', assert => {
           }, 'folders are properly referenced in graph');
         });
 
+      // clear client cache, to ensure subsequent tests run against server db
+      model.setCache({});
+
       model.getValue([...callPath, 'length'])
         .subscribe(parentSubFolderLength => {
           assert.deepEqual(parentSubFolderLength, R.path([...callPath, 'length'], res.json), 'new folders\' container length is updated');
@@ -96,6 +99,10 @@ test('foldersById: Should create multiple new folders', assert => {
 
       // test if new folders are properly referenced in the graph
       const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
+
+      // clear client cache, to ensure subsequent tests run against server db
+      model.setCache({});
+
       model.get(['foldersById', R.pluck('id', newFolders), refPaths])
         .subscribe(res => {
           assert.deepEqual(res.json, {
@@ -106,6 +113,56 @@ test('foldersById: Should create multiple new folders', assert => {
       model.getValue([...callPath, 'length'])
         .subscribe(parentSubFolderLength => {
           assert.deepEqual(parentSubFolderLength, R.path([...callPath, 'length'], res.json), 'new folders\' container length is updated');
+        });
+
+      model.getValue(['folderList', 'length'])
+        .subscribe(folderCount => {
+          assert.fail('TODO - test "total folder count is updated"');
+          // assert.deepEqual(folderCount, initialFolderLength + newFolders.length, 'total folder count is updated');
+        });
+    }, err => {
+      assert.fail(err);
+    });
+});
+
+
+test('foldersById: Should delete multiple folders', assert => {
+  assert.plan(4);
+  const db = dbConstructor({seed: seedFilePath});
+  const app = appConstructor(db);
+  const model = new falcor.Model({
+    source: new SuperTestDataSource('/api/model.json', app)
+  });
+  const callPath = ['foldersById', [2,3]];
+  const args = [];
+  const refPaths = [];
+  const thisPath = [];
+  const expectedResponse = {
+    foldersById: {
+      2: null,
+      3: null
+    }
+  };
+
+  model.call([...callPath, 'delete'], args, refPaths, thisPath)
+    .subscribe(res => {
+      assert.deepEqual(res.json, expectedResponse);
+
+      model.get(['foldersById', [2,3,4], 'id'])
+        .subscribe(res => {
+          assert.deepEqual(res.json, {
+            2: null,
+            3: null,
+            4: {id: 4}
+          }, 'folders are properly removed from graph');
+        });
+
+      // clear client cache, to ensure subsequent tests run against server db
+      model.setCache({});
+
+      model.getValue(['folderList', 1, 'length'])
+        .subscribe(parentFolderCount => {
+          assert.deepEqual(parentFolderCount, 1, 'parent folder count does not include deleted folders');
         });
 
       model.getValue(['folderList', 'length'])

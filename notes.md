@@ -112,6 +112,15 @@ ROUTER
 
 
 
+## Falcor Architecture
+Model (this is where the meat is... cache)
+DataProvider
+Server Middleware (falcor-express)
+Falcor-Router
+
+
+
+
 
 ## SQL Router
 Modeling your data as a single graph has two benefits
