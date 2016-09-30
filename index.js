@@ -13,9 +13,11 @@ if (process.env.NODE_ENV === 'production') {
   };
 }
 
-const db = require('./db')(dbConfig);
-const app = require('./app')(db);
+require('./db')(dbConfig)
+  .then(db => {
+    const app = require('./app')(db);
 
-app.listen(port, () => {
-  console.log(`listening on port ${port}`);
-});
+    app.listen(port, () => {
+      console.log(`listening on port ${port}`);
+    });
+  });
