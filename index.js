@@ -1,3 +1,5 @@
+const port = process.env.PORT || 3000;
+
 let dbConfig;
 if (process.env.NODE_ENV === 'production') {
   dbConfig = {
@@ -14,6 +16,6 @@ if (process.env.NODE_ENV === 'production') {
 const db = require('./db')(dbConfig);
 const app = require('./app')(db);
 
-app.listen(3000, () => {
-  console.log('listening on port 3000');
+app.listen(port, () => {
+  console.log(`listening on port ${port}`);
 });
