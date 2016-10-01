@@ -1,19 +1,15 @@
 const test = require('tape');
 const request = require('supertest');
-const falcor = require('falcor');
 const dbConstructor = require('../db');
-const appConstructor = require('../app');
-const SuperTestDataSource = require('./utils/superTestDataSource');
+const {
+  setupFalcorTestModel
+} = require('./utils/test-utils');
 const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
 
 
 test('foldersById: Should return folders with ID 1, 3, and 4', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     "foldersById": {
       "1": {
@@ -45,11 +41,7 @@ test('foldersById: Should return folders with ID 1, 3, and 4', assert => {
 
 test('foldersById: Should return null for folder that doesn\'t exist', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     "foldersById": {
       "nope": null
@@ -67,11 +59,7 @@ test('foldersById: Should return null for folder that doesn\'t exist', assert =>
 
 test('foldersById: Should return folder with subfolders', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     "foldersById": {
       "1": {
@@ -129,11 +117,7 @@ test('foldersById: Should return folder with subfolders', assert => {
 
 test('foldersById: Should return folder with subfolder count', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     "foldersById": {
       "2": {

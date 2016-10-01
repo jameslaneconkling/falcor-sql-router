@@ -1,13 +1,13 @@
 const test = require('tape');
 const request = require('supertest');
-const falcor = require('falcor');
-const R = require('ramda');
 const dbConstructor = require('../db');
+const {
+  setupFalcorTestModel
+} = require('./utils/test-utils');
 const {
   getGraphSubset
 } = require('../utils/falcor');
-const appConstructor = require('../app');
-const SuperTestDataSource = require('./utils/superTestDataSource');
+const R = require('ramda');
 const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
 
 
@@ -18,11 +18,7 @@ const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
 
 test('foldersById: Should create one new folder', assert => {
   assert.plan(4);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const callPath = ['foldersById', 1, 'folders'];
   const args = [{name: 'folder 4'}];
   const refPaths = ['id', 'name', 'parentId'];
@@ -72,11 +68,7 @@ test('foldersById: Should create one new folder', assert => {
 
 test('foldersById: Should create multiple new folders', assert => {
   assert.plan(4);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const callPath = ['foldersById', 1, 'folders'];
   const args = [{name: 'folder 4'}, {name: 'folder 5'}];
   const refPaths = ['id', 'name', 'parentId'];
@@ -127,12 +119,8 @@ test('foldersById: Should create multiple new folders', assert => {
 
 
 test('foldersById: Should delete multiple folders', assert => {
-  assert.plan(4);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  assert.plan(3);
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const callPath = ['foldersById', [2,3]];
   const args = [];
   const refPaths = [];

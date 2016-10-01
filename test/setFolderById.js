@@ -1,19 +1,15 @@
 const test = require('tape');
 const request = require('supertest');
-const falcor = require('falcor');
 const dbConstructor = require('../db');
-const appConstructor = require('../app');
-const SuperTestDataSource = require('./utils/superTestDataSource');
+const {
+  setupFalcorTestModel
+} = require('./utils/test-utils');
 const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
 
 
 test('foldersById: Should update folder name with a pathSet', assert => {
   assert.plan(2);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     foldersById: {
       2: {
@@ -41,11 +37,7 @@ test('foldersById: Should update folder name with a pathSet', assert => {
 
 test('foldersById: Should update folder name with a jsonGraphEnvelope', assert => {
   assert.plan(2);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     foldersById: {
       2: {

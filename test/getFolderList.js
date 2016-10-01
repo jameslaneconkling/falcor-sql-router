@@ -1,20 +1,15 @@
 const test = require('tape');
 const request = require('supertest');
-const falcor = require('falcor');
 const dbConstructor = require('../db');
-const appConstructor = require('../app');
-const SuperTestDataSource = require('./utils/superTestDataSource');
+const {
+  setupFalcorTestModel
+} = require('./utils/test-utils');
 const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
 
 
 test('folderList: Should return folders from beginning of list', assert => {
   assert.plan(1);
-  // TODO - app might need a callbacks to ensure db's finished initializing before tests run
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     folderList: {
       0: {
@@ -41,11 +36,7 @@ test('folderList: Should return folders from beginning of list', assert => {
 
 test('folderList: should return non-continguous folders from middle of list', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     folderList: {
       2: {
@@ -77,11 +68,7 @@ test('folderList: should return non-continguous folders from middle of list', as
 
 test('folderList: Should return null for folders that do not exist', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     folderList: {
       100: null
@@ -99,11 +86,7 @@ test('folderList: Should return null for folders that do not exist', assert => {
 
 test('folderList: Should return folder count', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     folderList: {
       length: 9
@@ -121,11 +104,7 @@ test('folderList: Should return folder count', assert => {
 
 test('folderList: Should return folder with subfolders', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     "folderList": {
       "0": {

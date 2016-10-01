@@ -1,6 +1,15 @@
 const request = require('supertest');
+const falcor = require('falcor');
+const SuperTestDataSource = require('./superTestDataSource');
 
-exports.runTest = (app, assert, method, paths, expectedResponse) => {
+exports.setupFalcorTestModel = db => {
+  const app = require('../../app')(db);
+  return new falcor.Model({
+    source: new SuperTestDataSource('/api/model.json', app)
+  });
+};
+
+exports.runSuperTest = (app, assert, method, paths, expectedResponse) => {
   return request(app)
     .get(`/api/model.json?method=${method}&paths=${JSON.stringify(paths)}`)
     .end((err, res) => {
