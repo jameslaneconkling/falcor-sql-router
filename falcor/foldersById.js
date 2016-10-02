@@ -98,18 +98,19 @@ module.exports = db => {
       route: 'foldersById[{keys:ids}].folders.createSubFolder',
       call(callPath, args, refPaths, thisPaths) {
         const ids = callPath.ids;
-        const name = args[0].name;
+        const newFolders = args;
 
         return Rx.Observable.from(ids)
-          .concatMap(id => {
+          .flatMap(id => {
+            return Rx.Observable.from(newFolders).map(newFolder => Object.assign(newFolder, {id}));
+          })
+          .concatMap(folder => {
             // create folder
-            // TODO - how to better create two observables in sequence (second is created only after the first completes) and combine their results
-            return Folder.create(name, id)
-              .flatMap(folder => {
-                // get new count of parent folder's subfolders
-                return Folder.getSubfolderCount(id)
-                  .map(data => Object.assign(folder, {parentSubFolderCount: data.count}));
-              });
+            return Folder.create(folder.name, folder.id);
+          })
+          .flatMap(folder => {
+            // get new count of parent folder's subfolders
+            return Folder.getSubfolderCount(folder.parentId).map(data => Object.assign(folder, {parentSubFolderCount: data.count}));
           })
           .map(folder => {
             // return pathValue ref linking parentFolder to new folder

@@ -24,68 +24,6 @@ const noop = () => undefined;
 // * explicit dependencies like container.length and folderList are updated in cache
 // * dbGraph is updated
 
-test('foldersById: Should create one new folder', assert => {
-  assert.plan(4);
-  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
-  const callPath = ['foldersById', 1, 'folders'];
-  const args = [{name: 'folder 4'}];
-  const refPaths = ['id', 'name', 'parentId'];
-  const thisPath = ['length'];
-  const expectedResponse = {
-    "foldersById": {
-      "1": {
-        "folders": {
-          "3": {"id": 10, "name": "folder 4", "parentId": 1},
-          "length": 4
-        }
-      }
-    }
-  };
-
-  Rx.Observable.just(null)
-    .flatMap(() => {
-      // prefetch folder subfolder count for test
-      return model.getValue(['folderList', 'length']);
-    })
-    .flatMap(initialFolderCount => {
-      // run create query
-      return model.call([...callPath, 'createSubFolder'], args, refPaths, thisPath).map(res => Object.assign(res, {initialFolderCount}));
-    })
-    .map(res => {
-      assert.deepEqual(res.json, expectedResponse);
-
-      return res;
-    })
-    .map(res => {
-      const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
-
-      // test if total folder count is properly invalidated in the cache
-      assert.equal(R.path(['folderList', 'length'], model.getCache(['folderList', 'length'])), undefined, 'folderList count is invalidated');
-
-      // test if parent folder count is updated in cache
-      assert.equal(
-        R.path([...callPath, 'length'], model.getCache([...callPath, 'length'])),
-        R.path([...callPath, 'length'], res.json),
-        'new folder\'s parent folder count is updated in cache'
-      );
-
-      return res;
-    })
-    .map(res => {
-      const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
-
-      // test if new folders are properly added to the db
-      model.setCache({});
-      model.get(['foldersById', R.pluck('id', newFolders), refPaths])
-        .subscribe(res => {
-          assert.deepEqual(res.json, {
-            foldersById: R.zipObj(R.pluck('id', newFolders), newFolders)
-          }, 'folders are properly referenced in cache');
-        }, assertFailure(assert));
-    })
-    .subscribe(noop, assertFailure(assert));
-});
-
 
 test('foldersById: Should create multiple new folders', assert => {
   assert.plan(4);
