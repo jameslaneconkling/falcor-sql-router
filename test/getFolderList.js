@@ -4,7 +4,12 @@ const dbConstructor = require('../db');
 const {
   setupFalcorTestModel
 } = require('./utils/test-utils');
+
 const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
+const assertFailure = assert => err => {
+  assert.fail(err);
+  assert.end();
+};
 
 
 test('folderList: Should return folders from beginning of list', assert => {
@@ -28,9 +33,7 @@ test('folderList: Should return folders from beginning of list', assert => {
   model.get(["folderList", {"to": 1}, ["id", "name", "parentId"]])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure(assert));
 });
 
 
@@ -60,9 +63,7 @@ test('folderList: should return non-continguous folders from middle of list', as
   model.get(["folderList", [{"from":2, "to":3}, 5], ["id", "name", "parentId"]])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure(assert));
 });
 
 
@@ -78,9 +79,7 @@ test('folderList: Should return null for folders that do not exist', assert => {
   model.get(["folderList", 100, ["id", "name", "parentId"]])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure(assert));
 });
 
 
@@ -96,9 +95,7 @@ test('folderList: Should return folder count', assert => {
   model.get(["folderList", "length"])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure(assert));
 });
 
 
@@ -131,7 +128,5 @@ test('folderList: Should return folder with subfolders', assert => {
   )
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure(assert));
 });

@@ -8,7 +8,12 @@ const {
   getGraphSubset
 } = require('../utils/falcor');
 const R = require('ramda');
+
 const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
+const assertFailure = assert => err => {
+  assert.fail(err);
+  assert.end();
+};
 
 
 // CREATE/DELETE should test:
@@ -45,7 +50,7 @@ test('foldersById: Should create one new folder', assert => {
           assert.deepEqual(res.json, {
             foldersById: R.zipObj(R.pluck('id', newFolders), newFolders)
           }, 'folders are properly referenced in graph');
-        });
+        }, assertFailure(assert));
 
       // clear client cache, to ensure subsequent tests run against server db
       model.setCache({});
@@ -53,16 +58,14 @@ test('foldersById: Should create one new folder', assert => {
       model.getValue([...callPath, 'length'])
         .subscribe(parentSubFolderLength => {
           assert.deepEqual(parentSubFolderLength, R.path([...callPath, 'length'], res.json), 'new folders\' container length is updated');
-        });
+        }, assertFailure(assert));
 
       model.getValue(['folderList', 'length'])
         .subscribe(folderCount => {
           assert.fail('TODO - test "total folder count is updated"');
           // assert.deepEqual(folderCount, initialFolderLength + newFolders.length, 'total folder count is updated');
-        });
-    }, err => {
-      assert.fail(err);
-    });
+        }, assertFailure(assert));
+    }, assertFailure(assert));
 });
 
 
@@ -100,26 +103,24 @@ test('foldersById: Should create multiple new folders', assert => {
           assert.deepEqual(res.json, {
             foldersById: R.zipObj(R.pluck('id', newFolders), newFolders)
           }, 'folders are properly referenced in graph');
-        });
+        }, assertFailure(assert));
 
       model.getValue([...callPath, 'length'])
         .subscribe(parentSubFolderLength => {
           assert.deepEqual(parentSubFolderLength, R.path([...callPath, 'length'], res.json), 'new folders\' container length is updated');
-        });
+        }, assertFailure(assert));
 
       model.getValue(['folderList', 'length'])
         .subscribe(folderCount => {
           assert.fail('TODO - test "total folder count is updated"');
           // assert.deepEqual(folderCount, initialFolderLength + newFolders.length, 'total folder count is updated');
-        });
-    }, err => {
-      assert.fail(err);
-    });
+        }, assertFailure(assert));
+    }, assertFailure(assert));
 });
 
 
 test('foldersById: Should delete multiple folders', assert => {
-  assert.plan(3);
+  assert.plan(4);
   const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const callPath = ['foldersById', [2,3]];
   const args = [];
@@ -136,6 +137,9 @@ test('foldersById: Should delete multiple folders', assert => {
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
 
+      // clear client cache, to ensure subsequent tests run against server db
+      model.setCache({});
+
       model.get(['foldersById', [2,3,4], 'id'])
         .subscribe(res => {
           assert.deepEqual(res.json, {
@@ -143,24 +147,19 @@ test('foldersById: Should delete multiple folders', assert => {
             3: null,
             4: {id: 4}
           }, 'folders are properly removed from graph');
-        });
-
-      // clear client cache, to ensure subsequent tests run against server db
-      model.setCache({});
+        }, assertFailure(assert));
 
       model.getValue(['folderList', 1, 'length'])
         .subscribe(parentFolderCount => {
           assert.deepEqual(parentFolderCount, 1, 'parent folder count does not include deleted folders');
-        });
+        }, assertFailure(assert));
 
       model.getValue(['folderList', 'length'])
         .subscribe(folderCount => {
           assert.fail('TODO - test "total folder count is updated"');
           // assert.deepEqual(folderCount, initialFolderLength + newFolders.length, 'total folder count is updated');
-        });
-    }, err => {
-      assert.fail(err);
-    });
+        }, assertFailure(assert));
+    }, assertFailure(assert));
 });
 
 

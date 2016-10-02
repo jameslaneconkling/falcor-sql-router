@@ -4,7 +4,12 @@ const dbConstructor = require('../db');
 const {
   setupFalcorTestModel
 } = require('./utils/test-utils');
+
 const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
+const assertFailure = assert => err => {
+  assert.fail(err);
+  assert.end();
+};
 
 
 test('foldersById: Should update folder name with a pathSet', assert => {
@@ -24,14 +29,15 @@ test('foldersById: Should update folder name with a pathSet', assert => {
   })
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse, 'set returns updated value');
-    }, err => {
-      assert.fail(err);
-    }, () => {
+
+      // clear client cache, to ensure subsequent tests run against server db
+      model.setCache({});
+
       model.getValue(['foldersById', 2, 'name'])
         .subscribe(name => {
           assert.equal(name, 'folder1 edit1', 'updated value is persisted');
         });
-    });
+    }, assertFailure(assert));
 });
 
 
@@ -54,12 +60,13 @@ test('foldersById: Should update folder name with a jsonGraphEnvelope', assert =
   })
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse, 'set returns updated value');
-    }, err => {
-      assert.fail(err)
-    }, () => {
+
+      // clear client cache, to ensure subsequent tests run against server db
+      model.setCache({});
+
       model.getValue(['foldersById', 2, 'name'])
         .subscribe(name => {
           assert.equal(name, 'folder1 edit2', 'updated value is persisted');
         });
-    });
+    }, assertFailure(assert));
 });

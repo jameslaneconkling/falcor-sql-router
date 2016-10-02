@@ -4,8 +4,12 @@ const dbConstructor = require('../db');
 const {
   setupFalcorTestModel
 } = require('./utils/test-utils');
-const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
 
+const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
+const assertFailure = assert => err => {
+  assert.fail(err);
+  assert.end();
+};
 
 test('foldersById: Should return folders with ID 1, 3, and 4', assert => {
   assert.plan(1);
@@ -33,9 +37,7 @@ test('foldersById: Should return folders with ID 1, 3, and 4', assert => {
   model.get(["foldersById", [1, 3, 4], ["id", "name", "parentId"]])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure(assert));
 });
 
 
@@ -51,9 +53,7 @@ test('foldersById: Should return null for folder that doesn\'t exist', assert =>
   model.get(["foldersById", "nope", ["id", "name", "parentId"]])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure(assert));
 });
 
 
@@ -109,9 +109,7 @@ test('foldersById: Should return folder with subfolders', assert => {
   )
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure(assert));
 });
 
 
@@ -150,7 +148,5 @@ test('foldersById: Should return folder with subfolder count', assert => {
   )
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure(assert));
 });
