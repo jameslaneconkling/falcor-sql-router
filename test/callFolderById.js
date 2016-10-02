@@ -1,5 +1,6 @@
 const test = require('tape');
 const request = require('supertest');
+const Rx = require('rx');
 const dbConstructor = require('../db');
 const {
   setupFalcorTestModel
@@ -14,12 +15,14 @@ const assertFailure = assert => err => {
   assert.fail(err);
   assert.end();
 };
+const noop = () => undefined;
 
 
 // CREATE/DELETE should test:
-// * new value is created/deleted at root/
-// * new value is referenced in container/ref
-// * explicit dependencies like container.length and folderList are invalidated
+// * response is expected
+// * value is created/deleted in cache (not currently doing this b/c the assumption is that if the response is correct, the correct items were created and persisted, bad idea?)
+// * explicit dependencies like container.length and folderList are updated in cache
+// * dbGraph is updated
 
 test('foldersById: Should create one new folder', assert => {
   assert.plan(4);
@@ -39,33 +42,52 @@ test('foldersById: Should create one new folder', assert => {
     }
   };
 
-  model.call([...callPath, 'createSubFolder'], args, refPaths, thisPath)
-    .subscribe(res => {
+  Rx.Observable.just(null)
+    .flatMap(() => {
+      // prefetch folder subfolder count for test
+      return model.getValue(['folderList', 'length']);
+    })
+    .flatMap(initialFolderCount => {
+      // run create query
+      return model.call([...callPath, 'createSubFolder'], args, refPaths, thisPath).map(res => Object.assign(res, {initialFolderCount}));
+    })
+    .map(res => {
       assert.deepEqual(res.json, expectedResponse);
 
-      // test if new folders are properly referenced in the graph
+      return res;
+    })
+    .map(res => {
       const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
+
+      // test if total folder count is properly updated in the cache
+      assert.equal(
+        model.getCache(['folderList', 'length']).folderList.length,
+        res.initialFolderCount + newFolders.length,
+        'total folder count is updated in cache'
+      );
+
+      // test if parent folder count is updated in cache
+      assert.equal(
+        R.path([...callPath, 'length'], model.getCache([...callPath, 'length'])),
+        R.path([...callPath, 'length'], res.json),
+        'new folder\'s parent folder count is updated in cache'
+      );
+
+      return res;
+    })
+    .map(res => {
+      const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
+
+      // test if new folders are properly added to the db
+      model.setCache({});
       model.get(['foldersById', R.pluck('id', newFolders), refPaths])
         .subscribe(res => {
           assert.deepEqual(res.json, {
             foldersById: R.zipObj(R.pluck('id', newFolders), newFolders)
-          }, 'folders are properly referenced in graph');
+          }, 'folders are properly referenced in cache');
         }, assertFailure(assert));
-
-      // clear client cache, to ensure subsequent tests run against server db
-      model.setCache({});
-
-      model.getValue([...callPath, 'length'])
-        .subscribe(parentSubFolderLength => {
-          assert.deepEqual(parentSubFolderLength, R.path([...callPath, 'length'], res.json), 'new folders\' container length is updated');
-        }, assertFailure(assert));
-
-      model.getValue(['folderList', 'length'])
-        .subscribe(folderCount => {
-          assert.fail('TODO - test "total folder count is updated"');
-          // assert.deepEqual(folderCount, initialFolderLength + newFolders.length, 'total folder count is updated');
-        }, assertFailure(assert));
-    }, assertFailure(assert));
+    })
+    .subscribe(noop, assertFailure(assert));
 });
 
 
@@ -88,34 +110,51 @@ test('foldersById: Should create multiple new folders', assert => {
     }
   };
 
-  model.call([...callPath, 'createSubFolder'], args, refPaths, thisPath)
-    .subscribe(res => {
+  Rx.Observable.just(null)
+    .flatMap(() => {
+      // prefetch folder subfolder count for test
+      return model.getValue(['folderList', 'length']);
+    })
+    .flatMap(initialFolderCount => {
+      // run create query
+      return model.call([...callPath, 'createSubFolder'], args, refPaths, thisPath).map(res => Object.assign(res, {initialFolderCount}));
+    })
+    .map(res => {
       assert.deepEqual(res.json, expectedResponse);
-
-      // test if new folders are properly referenced in the graph
+      return res;
+    })
+    .map(res => {
       const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
 
-      // clear client cache, to ensure subsequent tests run against server db
-      model.setCache({});
+      // test if total folder count is updated in cache
+      assert.equal(
+        model.getCache(['folderList', 'length']).folderList.length,
+        res.initialFolderCount + 2,
+        'total folder count is updated in cache'
+      );
 
+      // test if parent folder count is updated in cache
+      assert.equal(
+        R.path([...callPath, 'length'], model.getCache([...callPath, 'length'])),
+        R.path([...callPath, 'length'], res.json),
+        'new folders\' parent folder count is updated in cache'
+      );
+
+      return res;
+    })
+    .map(res => {
+      const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
+
+      // test if new folders are properly added to the dbGraph
+      model.setCache({});
       model.get(['foldersById', R.pluck('id', newFolders), refPaths])
         .subscribe(res => {
           assert.deepEqual(res.json, {
             foldersById: R.zipObj(R.pluck('id', newFolders), newFolders)
           }, 'folders are properly referenced in graph');
         }, assertFailure(assert));
-
-      model.getValue([...callPath, 'length'])
-        .subscribe(parentSubFolderLength => {
-          assert.deepEqual(parentSubFolderLength, R.path([...callPath, 'length'], res.json), 'new folders\' container length is updated');
-        }, assertFailure(assert));
-
-      model.getValue(['folderList', 'length'])
-        .subscribe(folderCount => {
-          assert.fail('TODO - test "total folder count is updated"');
-          // assert.deepEqual(folderCount, initialFolderLength + newFolders.length, 'total folder count is updated');
-        }, assertFailure(assert));
-    }, assertFailure(assert));
+    })
+    .subscribe(noop, assertFailure(assert));
 });
 
 
@@ -163,7 +202,7 @@ test('foldersById: Should delete multiple folders', assert => {
 });
 
 
-test('foldersById: Should return error node on create folder failure', assert => {
+test.skip('foldersById: Should return error node on create folder failure', assert => {
   assert.plan(1);
   assert.fail('need to create and inject a test db driver that only returns errors');
 });
