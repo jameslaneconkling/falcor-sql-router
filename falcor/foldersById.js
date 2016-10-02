@@ -1,4 +1,5 @@
 const falcor = require('falcor');
+const R = require('ramda');
 const Rx = require('rx');
 const FolderModelConstructor = require('../folder/folderModel');
 const $ref = falcor.Model.ref;
@@ -118,7 +119,12 @@ module.exports = db => {
               value: $ref(['foldersById', folder.id])
             };
 
-            return [folderPathValue];
+            const folderCollectionLengthPathValue = {
+              path: ['folderList', 'length'],
+              invalidated: true
+            };
+
+            return [folderPathValue, folderCollectionLengthPathValue];
           });
       }
     },

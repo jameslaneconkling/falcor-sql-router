@@ -59,12 +59,8 @@ test('foldersById: Should create one new folder', assert => {
     .map(res => {
       const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
 
-      // test if total folder count is properly updated in the cache
-      assert.equal(
-        model.getCache(['folderList', 'length']).folderList.length,
-        res.initialFolderCount + newFolders.length,
-        'total folder count is updated in cache'
-      );
+      // test if total folder count is properly invalidated in the cache
+      assert.equal(R.path(['folderList', 'length'], model.getCache(['folderList', 'length'])), undefined, 'folderList count is invalidated');
 
       // test if parent folder count is updated in cache
       assert.equal(
@@ -126,12 +122,8 @@ test('foldersById: Should create multiple new folders', assert => {
     .map(res => {
       const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
 
-      // test if total folder count is updated in cache
-      assert.equal(
-        model.getCache(['folderList', 'length']).folderList.length,
-        res.initialFolderCount + 2,
-        'total folder count is updated in cache'
-      );
+      // test if total folder count is properly invalidated in the cache
+      assert.equal(R.path(['folderList', 'length'], model.getCache(['folderList', 'length'])), undefined, 'folderList count is invalidated');
 
       // test if parent folder count is updated in cache
       assert.equal(
