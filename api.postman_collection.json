@@ -19,15 +19,9 @@
 				}
 			],
 			"request": {
-				"url": "{{BASEURL}}/api/model.json?paths=[[\"folderList\",[{\"from\":1,\"to\":2}, {\"from\":50,\"to\":50}],[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"folderList\",[{\"from\": 1, \"to\":4}, 100],[\"id\", \"name\", \"parentId\"]]]&method=get",
 				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					}
-				],
+				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
@@ -41,16 +35,37 @@
 			"request": {
 				"url": "{{BASEURL}}/api/model.json?paths=[[\"folderList\",\"length\"]]&method=get",
 				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					}
-				],
+				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "SET Folder List Item",
+			"request": {
+				"url": "{{BASEURL}}/api/model.json",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "method",
+							"value": "set",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "jsonGraph",
+							"value": "{\"jsonGraph\":{\"folderList\":{\"1\":{\"name\":\"folder1 edit 1\"}}},\"paths\":[[\"folderList\",\"1\",\"name\"]]}",
+							"type": "text",
+							"enabled": true
+						}
+					]
 				},
 				"description": ""
 			},
@@ -73,7 +88,7 @@
 						},
 						{
 							"key": "jsonGraph",
-							"value": "{\"jsonGraph\":{\"foldersById\":{\"1\":{\"name\":\"folder 1 edit 1\"}}},\"paths\":[[\"foldersById\",\"1\",\"name\"]]}",
+							"value": "{\"jsonGraph\":{\"foldersById\":{\"1\":{\"name\":\"root folder edit 1\"}}},\"paths\":[[\"foldersById\",\"1\",\"name\"]]}",
 							"type": "text",
 							"enabled": true
 						}
@@ -86,7 +101,27 @@
 		{
 			"name": "GET Folder by ID",
 			"request": {
-				"url": "{{BASEURL}}/api/model.json?paths=[[\"foldersById\",[1, 3, 5, 15],[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"foldersById\",[1, 3, 4],[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET non-existant Folder by ID",
+			"request": {
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"foldersById\", \"nope\", [\"id\", \"name\", \"parentId\"]]]&method=get",
 				"method": "GET",
 				"header": [
 					{
@@ -106,7 +141,7 @@
 		{
 			"name": "GET Folder by ID with Sub Folder",
 			"request": {
-				"url": "{{BASEURL}}/api/model.json?paths=[[\"foldersById\",[1, 2], \"name\"],[\"foldersById\",[1, 2],[\"folders\"],{\"to\":3},[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"foldersById\",[1, 2], \"name\"],[\"foldersById\",[1, 2], \"folders\", {\"to\":2}, [\"id\", \"name\", \"parentId\"]]]&method=get",
 				"method": "GET",
 				"header": [
 					{
@@ -146,7 +181,7 @@
 		{
 			"name": "GET Folder List with Sub Folder",
 			"request": {
-				"url": "{{BASEURL}}/api/model.json?paths=[[\"folderList\",{\"to\":1}, \"name\"],[\"folderList\",{\"to\":1},[\"folders\"],{\"to\":2},[\"id\", \"name\", \"parentId\"]]]&method=get",
+				"url": "{{BASEURL}}/api/model.json?paths=[[\"folderList\",0 , \"name\"],[\"folderList\",{\"to\":1},[\"folders\"],{\"to\":1},[\"id\", \"name\", \"parentId\"]]]&method=get",
 				"method": "GET",
 				"header": [
 					{
@@ -158,6 +193,57 @@
 				"body": {
 					"mode": "raw",
 					"raw": "{\n    \"name\": \"Folder Name\",\n    \"parentId\": 1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "CREATE Folder",
+			"request": {
+				"url": "{{BASEURL}}/api/model.json",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "method",
+							"value": "call",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "callPath",
+							"value": "[\"foldersById\", 1, \"folders\", \"createSubFolder\"]",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "arguments",
+							"value": "[{\"name\": \"folder 4\"}]",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "pathSuffixes",
+							"value": "[\"id\", \"name\", \"parentId\"]",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "paths",
+							"value": "[\"length\"]",
+							"type": "text",
+							"enabled": true
+						}
+					]
 				},
 				"description": ""
 			},
