@@ -99,7 +99,7 @@ module.exports = db => {
      */
     getByRanges(ranges, fields) {
       return Rx.Observable.from(ranges)
-        .concatMap(range => Folder.getByRange(range, fields));
+        .flatMap(range => Folder.getByRange(range, fields));
     },
 
     /**

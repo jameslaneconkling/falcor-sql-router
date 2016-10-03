@@ -89,6 +89,20 @@ module.exports = db => {
     },
 
     /**
+     * Get resources from list by multiple ranges
+     *
+     * see getByRange()
+     *
+     * @param {Array} ranges
+     * @param {Array} fields
+     * @return {Observable}
+     */
+    getByRanges(ranges, fields) {
+      return Rx.Observable.from(ranges)
+        .flatMap(range => Resource.getByRange(range, fields));
+    },
+
+    /**
      * SET resource props
      *
      * @param {String} id
@@ -115,6 +129,24 @@ module.exports = db => {
             });
           });
 
+          observer.onCompleted();
+        });
+      });
+    },
+
+    /**
+     * GET Resource count
+     *
+     * @return {Observable}
+     */
+    getCount() {
+      return Rx.Observable.create(observer => {
+        db.get(`SELECT count(*) as count FROM resource`, [], (err, row) => {
+          if (err) {
+            return handleError(observer, err);
+          }
+
+          observer.onNext(row.count);
           observer.onCompleted();
         });
       });

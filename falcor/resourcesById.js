@@ -40,7 +40,7 @@ module.exports = db => {
         const ids = Object.keys(resources);
 
         return Rx.Observable.from(ids)
-          .concatMap(id => Resource.setRow(id, resources[id]))
+          .flatMap(id => Resource.setRow(id, resources[id]))
           .map(data => {
             return {
               path: ['resourcesById', data.id, data.field],

@@ -41,7 +41,7 @@ module.exports = db => {
         const ids = Object.keys(folders);
 
         return Rx.Observable.from(ids)
-          .concatMap(id => Folder.setRow(id, folders[id]))
+          .flatMap(id => Folder.setRow(id, folders[id]))
           .map(data => {
             return {
               path: ['foldersById', data.id, data.field],

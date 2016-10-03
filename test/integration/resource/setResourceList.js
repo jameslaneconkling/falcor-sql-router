@@ -12,20 +12,20 @@ const assertFailure = assert => err => {
 };
 
 
-test('folderList: Should update folder name', assert => {
+test('resourceList: Should update resource name with a pathSet', assert => {
   assert.plan(2);
   const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
-    folderList: {
+    resourceList: {
       1: {
-        name: 'root folder edit 1'
+        name: 'green edit 1'
       }
     }
   };
 
   model.set({
-    path: ['folderList', 1, 'name'],
-    value: 'root folder edit 1'
+    path: ['resourceList', 1, 'name'],
+    value: 'green edit 1'
   })
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse, 'set returns updated value');
@@ -33,9 +33,9 @@ test('folderList: Should update folder name', assert => {
       // clear client cache, to ensure subsequent tests run against server db
       model.setCache({});
 
-      model.getValue(['folderList', 1, 'name'])
+      model.getValue(['resourceList', 1, 'name'])
         .subscribe(name => {
-          assert.equal(name, 'root folder edit 1', 'updated value is persisted');
+          assert.equal(name, 'green edit 1', 'updated value is persisted');
         });
     }, assertFailure(assert));
 });
