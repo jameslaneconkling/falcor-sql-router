@@ -130,17 +130,21 @@ module.exports = db => {
       }
     },
     // DELETE Folders by ID [implicit]
-    // TODO - this route should be foldersById[{keys:ids}].delete
-    // TODO - handle refPath and thisPath
     {
       route: "foldersById[{keys:ids}].delete",
       call(callPath, args, refPaths, thisPaths) {
         // foldersList is treated as an implicit dependency, so invalidation must be handled by client
         return Folder.deleteByIds(callPath.ids)
-          .map(id => ({
-            path: ['foldersById', id],
-            value: null
-          }));
+          .map(id => ([
+            {
+              path: ['foldersById', id],
+              value: null
+            },
+            {
+              path: ['folderList', 'length'],
+              invalidated: true
+            }
+          ]));
       }
     }
   ];

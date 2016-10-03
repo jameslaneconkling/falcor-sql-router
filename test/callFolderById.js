@@ -44,24 +44,26 @@ test('foldersById: Should create multiple new folders', assert => {
     }
   };
 
+
   Rx.Observable.just(null)
     .flatMap(() => {
-      // prefetch folder subfolder count for test
-      return model.getValue(['folderList', 'length']);
+      // prerequest dependent properties, so later we can test that they were invalidated
+      return model.get(['folderList', 'length']);
     })
-    .flatMap(initialFolderCount => {
-      // run create query
-      return model.call([...callPath, 'createSubFolder'], args, refPaths, thisPath).map(res => Object.assign(res, {initialFolderCount}));
-    })
-    .map(res => {
-      assert.deepEqual(res.json, expectedResponse);
-      return res;
+    .flatMap(() => {
+      return model.call([...callPath, 'createSubFolder'], args, refPaths, thisPath)
     })
     .map(res => {
       const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
 
+      assert.deepEqual(res.json, expectedResponse);
+
       // test if total folder count is properly invalidated in the cache
-      assert.equal(R.path(['folderList', 'length'], model.getCache(['folderList', 'length'])), undefined, 'folderList count is invalidated');
+      assert.equal(
+        R.path(['folderList', 'length'], model.getCache(['folderList', 'length'])),
+        undefined,
+        'folderList count is invalidated'
+      );
 
       // test if parent folder count is updated in cache
       assert.equal(
@@ -69,11 +71,6 @@ test('foldersById: Should create multiple new folders', assert => {
         R.path([...callPath, 'length'], res.json),
         'new folders\' parent folder count is updated in cache'
       );
-
-      return res;
-    })
-    .map(res => {
-      const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));
 
       // test if new folders are properly added to the dbGraph
       model.setCache({});
@@ -89,7 +86,7 @@ test('foldersById: Should create multiple new folders', assert => {
 
 
 test('foldersById: Should delete multiple folders', assert => {
-  assert.plan(4);
+  assert.plan(3);
   const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const callPath = ['foldersById', [2,3]];
   const args = [];
@@ -102,33 +99,46 @@ test('foldersById: Should delete multiple folders', assert => {
     }
   };
 
-  model.call([...callPath, 'delete'], args, refPaths, thisPath)
-    .subscribe(res => {
+  Rx.Observable.just(null)
+    .flatMap(() => {
+      // prerequest dependent properties, so later we can test that they were invalidated
+      return model.get(
+        ['folderList', 'length'],
+        ['foldersById', 1, 'folders', 'length']
+      );
+    })
+    .flatMap(() => {
+      return model.call([...callPath, 'delete'], args, refPaths, thisPath);
+    })
+    .map(res => {
       assert.deepEqual(res.json, expectedResponse);
 
-      // clear client cache, to ensure subsequent tests run against server db
-      model.setCache({});
+      assert.equal(
+        R.path(['folderList', 'length'], model.getCache(['folderList', 'length'])),
+        undefined,
+        'folderList count is invalidated'
+      );
 
-      model.get(['foldersById', [2,3,4], 'id'])
+      // currently handled as an implicit dependency, so invalidation handled by client
+      // assert.equal(
+      //   R.path(['foldersById', 1, 'folders', 'length'], model.getCache(['foldersById', 1, 'folders', 'length'])),
+      //   undefined,
+      //   'deleted folders\' parent subfolder count is invalidated'
+      // );
+
+      model.setCache({});
+      model.get(['foldersById', [2, 3, 4], 'id'])
         .subscribe(res => {
           assert.deepEqual(res.json, {
-            2: null,
-            3: null,
-            4: {id: 4}
+            foldersById: {
+              2: null,
+              3: null,
+              4: {id: 4}
+            }
           }, 'folders are properly removed from graph');
         }, assertFailure(assert));
-
-      model.getValue(['folderList', 1, 'length'])
-        .subscribe(parentFolderCount => {
-          assert.deepEqual(parentFolderCount, 1, 'parent folder count does not include deleted folders');
-        }, assertFailure(assert));
-
-      model.getValue(['folderList', 'length'])
-        .subscribe(folderCount => {
-          assert.fail('TODO - test "total folder count is updated"');
-          // assert.deepEqual(folderCount, initialFolderLength + newFolders.length, 'total folder count is updated');
-        }, assertFailure(assert));
-    }, assertFailure(assert));
+    })
+    .subscribe(noop, assertFailure(assert));
 });
 
 
