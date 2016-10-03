@@ -7,7 +7,8 @@ module.exports = (db) => {
     ...require('./foldersById-optimized')(db),
     ...require('./folderList')(db),
     ...require('./folderList-optimized')(db),
-    ...require('./resources')(db)
+    ...require('./resourcesById')(db),
+    ...require('./resourceList')(db)
   ]);
 
   // To subclass:
