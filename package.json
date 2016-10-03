@@ -17,7 +17,7 @@
     "initDB": "node lib/init_db.js",
     "reinitDB": "rm ./db.sql && node lib/init_db.js",
     "seedDB": "node lib/seed_db.js",
-    "test": "NODE_ENV=test node test/ | tap-diff || true"
+    "test": "NODE_ENV=test node test/ | tap-summary || true"
   },
   "author": "jameslaneconkling",
   "license": "ISC",
