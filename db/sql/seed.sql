@@ -1,3 +1,17 @@
+INSERT INTO resource
+  (name, folderId)
+  VALUES
+  ('red', 1),          -- id 1
+  ('green', 1),        -- id 2
+  ('magenta', 1),      -- id 3
+  ('cyan', 1),         -- id 4
+  ('orange', 2),
+  ('light-urple', 2),
+  ('mauve', 3),
+  ('taupe', 3),
+  ('sarcoline', 4)
+;
+
 INSERT INTO folder
   (name, parentId)
   VALUES
