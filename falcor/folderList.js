@@ -8,7 +8,7 @@ module.exports = db => {
   return [
     // GET Folders from folderList by index
     {
-      route: "folderList[{ranges:ranges}]",
+      route: 'folderList[{ranges:ranges}]',
       get(pathSet) {
         const ranges = pathSet.ranges;
 
@@ -32,8 +32,8 @@ module.exports = db => {
     },
     // GET Folders Length
     {
-      route: "folderList.length",
-      get(pathSet) {
+      route: 'folderList.length',
+      get() {
         return Folder.getCount()
           .map(count => {
             // return pathValue count

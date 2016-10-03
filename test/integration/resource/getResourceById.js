@@ -1,5 +1,4 @@
 const test = require('tape');
-const request = require('supertest');
 const dbConstructor = require('../../../db');
 const {
   setupFalcorTestModel
@@ -16,26 +15,26 @@ test('resourcesById: Should return resources with ID 1, 4, and 5', assert => {
   assert.plan(1);
   const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
-    "resourcesById": {
-      "1": {
-        "id": 1,
-        "name": "red",
-        "folderId": 1
+    'resourcesById': {
+      '1': {
+        'id': 1,
+        'name': 'red',
+        'folderId': 1
       },
-      "4": {
-        "id": 4,
-        "name": "cyan",
-        "folderId": 1
+      '4': {
+        'id': 4,
+        'name': 'cyan',
+        'folderId': 1
       },
-      "5": {
-        "id": 5,
-        "name": "orange",
-        "folderId": 2
+      '5': {
+        'id': 5,
+        'name': 'orange',
+        'folderId': 2
       }
     }
   };
 
-  model.get(["resourcesById", [1, 4, 5], ["id", "name", "folderId"]])
+  model.get(['resourcesById', [1, 4, 5], ['id', 'name', 'folderId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
@@ -46,12 +45,12 @@ test('resourcesById: Should return null for resource that doesn\'t exist', asser
   assert.plan(1);
   const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
-    "resourcesById": {
-      "nope": null
+    'resourcesById': {
+      'nope': null
     }
   };
 
-  model.get(["resourcesById", "nope", ["id", "name", "folderId"]])
+  model.get(['resourcesById', 'nope', ['id', 'name', 'folderId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));

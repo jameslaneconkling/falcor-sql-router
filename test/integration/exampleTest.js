@@ -1,6 +1,5 @@
 const test = require('tape');
 const request = require('supertest');
-const falcor = require('falcor');
 const dbConstructor = require('../db');
 const appConstructor = require('../app');
 const {
@@ -24,18 +23,18 @@ test('Example Test against Falcor Model- folderList: Should return folders from 
     folderList: {
       0: {
         id: 1,
-        name: "root folder",
+        name: 'root folder',
         parentId: null
       },
       1: {
         id: 2,
-        name: "folder1",
+        name: 'folder1',
         parentId: 1
       }
     }
   };
 
-  model.get(["folderList", {"to": 1}, ["id", "name", "parentId"]])
+  model.get(['folderList', {'to': 1}, ['id', 'name', 'parentId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, err => {
@@ -49,26 +48,26 @@ test('Example Test against Falcor Model- foldersById: Should return folders with
   const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
 
   const expectedResponse = {
-    "foldersById": {
-      "1": {
-        "id": 1,
-        "name": "root folder",
-        "parentId": null
+    'foldersById': {
+      '1': {
+        'id': 1,
+        'name': 'root folder',
+        'parentId': null
       },
-      "3": {
-        "id": 3,
-        "name": "folder2",
-        "parentId": 1
+      '3': {
+        'id': 3,
+        'name': 'folder2',
+        'parentId': 1
       },
-      "4": {
-        "id": 4,
-        "name": "folder3",
-        "parentId": 1
+      '4': {
+        'id': 4,
+        'name': 'folder3',
+        'parentId': 1
       }
     }
   };
 
-  model.get(["foldersById", [1, 3, 4], ["id", "name", "parentId"]])
+  model.get(['foldersById', [1, 3, 4], ['id', 'name', 'parentId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, err => {
@@ -87,23 +86,23 @@ test('Example Test as ajax request - folderList: Should return folders from begi
 
   const method = 'get';
   const paths = [
-    ["folderList", {"to": 1}, ["id", "name", "parentId"]]
+    ['folderList', {'to': 1}, ['id', 'name', 'parentId']]
   ];
   const expectedResponse = {
     jsonGraph: {
       folderList: {
-        0: { $type: "ref", value: [ "foldersById", 1 ] },
-        1: { $type: "ref", value: [ "foldersById", 2 ] }
+        0: { $type: 'ref', value: [ 'foldersById', 1 ] },
+        1: { $type: 'ref', value: [ 'foldersById', 2 ] }
       },
       foldersById: {
         1: {
           id: 1,
-          name: "root folder",
+          name: 'root folder',
           parentId: null
         },
         2: {
           id: 2,
-          name: "folder1",
+          name: 'folder1',
           parentId: 1
         }
       }
@@ -129,25 +128,25 @@ test('Example Test as ajax request - foldersById: Should return folders with ID 
 
   const method = 'get';
   const paths = [
-    ["foldersById", [1, 3, 4], ["id", "name", "parentId"]]
+    ['foldersById', [1, 3, 4], ['id', 'name', 'parentId']]
   ];
   const expectedResponse = {
-    "jsonGraph": {
-      "foldersById": {
-        "1": {
-          "id": 1,
-          "name": "root folder",
-          "parentId": null
+    'jsonGraph': {
+      'foldersById': {
+        '1': {
+          'id': 1,
+          'name': 'root folder',
+          'parentId': null
         },
-        "3": {
-          "id": 3,
-          "name": "folder2",
-          "parentId": 1
+        '3': {
+          'id': 3,
+          'name': 'folder2',
+          'parentId': 1
         },
-        "4": {
-          "id": 4,
-          "name": "folder3",
-          "parentId": 1
+        '4': {
+          'id': 4,
+          'name': 'folder3',
+          'parentId': 1
         }
       }
     }
@@ -212,10 +211,10 @@ test('foldersById: Should update folder name with a jsonGraphEnvelope', assert =
   };
 
   model.set({
-    "jsonGraph": {
-      "foldersById": {2: {"name": "folder1 edit2"}}
+    'jsonGraph': {
+      'foldersById': {2: {'name': 'folder1 edit2'}}
     },
-    "paths": [["foldersById", 2, "name"]]
+    'paths': [['foldersById', 2, 'name']]
   })
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse, 'set returns updated value');

@@ -5,8 +5,8 @@
 // } = require('../utils/falcor');
 // const $ref = falcor.Model.ref;
 
-module.exports = db => {
-  return [];
+// module.exports = db => {
+//   return [];
 
   // NOTE - this won't work until folderList[{ranges:ranges}].folders[{ranges:childRanges}] works
   // return [
@@ -76,4 +76,4 @@ module.exports = db => {
   //     }
   //   }
   // ];
-};
+// };

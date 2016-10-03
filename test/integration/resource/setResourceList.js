@@ -1,5 +1,4 @@
 const test = require('tape');
-const request = require('supertest');
 const dbConstructor = require('../../../db');
 const {
   setupFalcorTestModel

@@ -8,4 +8,4 @@ module.exports = (db, file, cb=() => {}) => {
     }
     cb(null);
   });
-}
+};

@@ -1,5 +1,4 @@
 const test = require('tape');
-const request = require('supertest');
 const dbConstructor = require('../../../db');
 const {
   setupFalcorTestModel
@@ -19,18 +18,18 @@ test('resourceList: Should return resources from beginning of list', assert => {
     resourceList: {
       0: {
         id: 1,
-        name: "red",
+        name: 'red',
         folderId: 1
       },
       1: {
         id: 2,
-        name: "green",
+        name: 'green',
         folderId: 1
       }
     }
   };
 
-  model.get(["resourceList", {"to": 1}, ["id", "name", "folderId"]])
+  model.get(['resourceList', {'to': 1}, ['id', 'name', 'folderId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
@@ -44,23 +43,23 @@ test('resourceList: should return non-continguous resources from middle of list'
     resourceList: {
       2: {
         id: 3,
-        name: "magenta",
+        name: 'magenta',
         folderId: 1
       },
       3: {
         id: 4,
-        name: "cyan",
+        name: 'cyan',
         folderId: 1
       },
       5: {
         id: 6,
-        name: "light-urple",
+        name: 'light-urple',
         folderId: 2
       }
     }
   };
 
-  model.get(["resourceList", [{"from":2, "to":3}, 5], ["id", "name", "folderId"]])
+  model.get(['resourceList', [{'from':2, 'to':3}, 5], ['id', 'name', 'folderId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
@@ -76,7 +75,7 @@ test('resourceList: Should return null for resources that do not exist', assert 
     }
   };
 
-  model.get(["resourceList", 100, ["id", "name", "folderId"]])
+  model.get(['resourceList', 100, ['id', 'name', 'folderId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
@@ -92,7 +91,7 @@ test('resourceList: Should return resource count', assert => {
     }
   };
 
-  model.get(["resourceList", "length"])
+  model.get(['resourceList', 'length'])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));

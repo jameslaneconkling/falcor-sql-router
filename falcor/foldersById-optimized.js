@@ -1,12 +1,12 @@
-const falcor = require('falcor');
-const Rx = require('rx');
-const FolderModelConstructor = require('../folder/folderModel');
-const $ref = falcor.Model.ref;
+// const falcor = require('falcor');
+// const Rx = require('rx');
+// const FolderModelConstructor = require('../folder/folderModel');
+// const $ref = falcor.Model.ref;
 
-module.exports = db => {
-  const Folder = FolderModelConstructor(db);
+// module.exports = db => {
+//   const Folder = FolderModelConstructor(db);
 
-  return [];
+//   return [];
 
   // return [
   //   // CREATE Folder
@@ -102,4 +102,4 @@ module.exports = db => {
   //     }
   //   }
   // ];
-};
+// };

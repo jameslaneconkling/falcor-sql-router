@@ -5,32 +5,26 @@ module.exports = class ErrorDB {
   }
 
   run(query, bindings, callback = () => {}) {
-    this.callDB('run', arguments);
-    if (this.error) {
-      this.invokeErrorCallback(callback);
-    } else {
-      this.db.run(query, bindings, callback);
-    }
+    this.callDB('run', arguments, callback);
   }
 
   get(query, bindings, callback = () => {}) {
-    this.callDB('get', arguments);
+    this.callDB('get', arguments, callback);
   }
 
   all(query, bindings, callback = () => {}) {
-    this.callDB('all', arguments);
+    this.callDB('all', arguments, callback);
   }
 
   each(query, bindings, callback = () => {}, complete = () => {}) {
-    this.callDB('each', arguments);
-    complete();
+    this.callDB('each', arguments, callback, complete);
   }
 
   callDB(method, ...args) {
     if (this.error) {
-      callback(new Error('You Must Construct Additional Pylons'), null);
+      args[0](new Error('You Must Construct Additional Pylons'), null);
     } else {
-      this.db[method].apply(this.db, args);
+      this.db[method].apply(this.db, ...args);
     }
   }
 

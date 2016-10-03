@@ -1,5 +1,4 @@
 const falcor = require('falcor');
-const R = require('ramda');
 const Rx = require('rx');
 const FolderModelConstructor = require('../folder/folderModel');
 const $ref = falcor.Model.ref;
@@ -10,7 +9,7 @@ module.exports = db => {
   return [
     // GET SET Folders by IDs
     {
-      route: "foldersById[{keys:ids}][{keys:fields}]",
+      route: 'foldersById[{keys:ids}][{keys:fields}]',
       get(pathSet) {
         const foldersSource = Folder.getByIds(pathSet.ids, pathSet.fields);
 
@@ -52,7 +51,7 @@ module.exports = db => {
     },
     // GET Subfolders from folders
     {
-      route: "foldersById[{keys:parentIds}].folders[{ranges:childRanges}]",
+      route: 'foldersById[{keys:parentIds}].folders[{ranges:childRanges}]',
       get(pathSet) {
         const parentIds = pathSet.parentIds;
         const childRanges = pathSet.childRanges;
@@ -78,7 +77,7 @@ module.exports = db => {
     },
     // GET Subfolders count from base folder
     {
-      route: "foldersById[{keys:parentIds}].folders.length",
+      route: 'foldersById[{keys:parentIds}].folders.length',
       get(pathSet) {
         const parentIds = pathSet.parentIds;
 
@@ -96,7 +95,7 @@ module.exports = db => {
     // CREATE Folder
     {
       route: 'foldersById[{keys:ids}].folders.createSubFolder',
-      call(callPath, args, refPaths, thisPaths) {
+      call(callPath, args) {
         const ids = callPath.ids;
         const newFolders = args;
 
@@ -131,8 +130,8 @@ module.exports = db => {
     },
     // DELETE Folders by ID [implicit]
     {
-      route: "foldersById[{keys:ids}].delete",
-      call(callPath, args, refPaths, thisPaths) {
+      route: 'foldersById[{keys:ids}].delete',
+      call(callPath) {
         // foldersList is treated as an implicit dependency, so invalidation must be handled by client
         return Folder.deleteByIds(callPath.ids)
           .map(id => ([

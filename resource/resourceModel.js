@@ -4,7 +4,7 @@ const {
   range2LimitOffset
 } = require('../utils/falcor');
 
-handleError = (observer, err) => {
+const handleError = (observer, err) => {
   if (process.env.NODE_ENV !== 'test') {
     console.error(err);
   }
@@ -141,7 +141,7 @@ module.exports = db => {
      */
     getCount() {
       return Rx.Observable.create(observer => {
-        db.get(`SELECT count(*) as count FROM resource`, [], (err, row) => {
+        db.get('SELECT count(*) as count FROM resource', [], (err, row) => {
           if (err) {
             return handleError(observer, err);
           }

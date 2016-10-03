@@ -28,7 +28,7 @@ module.exports = (db) => {
   app.use('/api/model.json', require('./falcor')(db));
 
   // Error handling
-  app.use((err, req, res, next) => {
+  app.use((err, req, res) => {
     console.error('Error on:', req, err);
     res.status(500).send({
       name: err.name,

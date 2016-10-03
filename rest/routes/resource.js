@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const db = require('../../db');
 
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
   db.all('SELECT * FROM resource LIMIT 10', [], (err, rows) => {
     if (err) {
       next(err);
@@ -22,7 +22,8 @@ router.post('/', (req, res, next) => {
   }, function(err) {
     if (err) {
       console.error(err);
-      res.status(500).send()
+      res.status(500).send();
+      next();
     }
     res.status(200).send({
       id: this.lastID

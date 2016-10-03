@@ -1,5 +1,4 @@
 const test = require('tape');
-const request = require('supertest');
 const Rx = require('rx');
 const dbConstructor = require('../../../db');
 const {
@@ -33,12 +32,12 @@ test('foldersById: Should create multiple new folders', assert => {
   const refPaths = ['id', 'name', 'parentId'];
   const thisPath = ['length'];
   const expectedResponse = {
-    "foldersById": {
-      "1": {
-        "folders": {
-          "3": {"id": 10, "name": "folder 4", "parentId": 1},
-          "4": {"id": 11, "name": "folder 5", "parentId": 1},
-          "length": 5
+    'foldersById': {
+      '1': {
+        'folders': {
+          '3': {'id': 10, 'name': 'folder 4', 'parentId': 1},
+          '4': {'id': 11, 'name': 'folder 5', 'parentId': 1},
+          'length': 5
         }
       }
     }
@@ -51,7 +50,7 @@ test('foldersById: Should create multiple new folders', assert => {
       return model.get(['folderList', 'length']);
     })
     .flatMap(() => {
-      return model.call([...callPath, 'createSubFolder'], args, refPaths, thisPath)
+      return model.call([...callPath, 'createSubFolder'], args, refPaths, thisPath);
     })
     .map(res => {
       const newFolders = R.values(getGraphSubset(res.json, callPath, thisPath));

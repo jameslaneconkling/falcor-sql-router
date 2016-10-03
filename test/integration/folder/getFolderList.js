@@ -1,5 +1,4 @@
 const test = require('tape');
-const request = require('supertest');
 const dbConstructor = require('../../../db');
 const {
   setupFalcorTestModel
@@ -19,18 +18,18 @@ test('folderList: Should return folders from beginning of list', assert => {
     folderList: {
       0: {
         id: 1,
-        name: "root folder",
+        name: 'root folder',
         parentId: null
       },
       1: {
         id: 2,
-        name: "folder1",
+        name: 'folder1',
         parentId: 1
       }
     }
   };
 
-  model.get(["folderList", {"to": 1}, ["id", "name", "parentId"]])
+  model.get(['folderList', {'to': 1}, ['id', 'name', 'parentId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
@@ -44,23 +43,23 @@ test('folderList: should return non-continguous folders from middle of list', as
     folderList: {
       2: {
         id: 3,
-        name: "folder2",
+        name: 'folder2',
         parentId: 1
       },
       3: {
         id: 4,
-        name: "folder3",
+        name: 'folder3',
         parentId: 1
       },
       5: {
         id: 6,
-        name: "folder1.2",
+        name: 'folder1.2',
         parentId: 2
       }
     }
   };
 
-  model.get(["folderList", [{"from":2, "to":3}, 5], ["id", "name", "parentId"]])
+  model.get(['folderList', [{'from':2, 'to':3}, 5], ['id', 'name', 'parentId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
@@ -76,7 +75,7 @@ test('folderList: Should return null for folders that do not exist', assert => {
     }
   };
 
-  model.get(["folderList", 100, ["id", "name", "parentId"]])
+  model.get(['folderList', 100, ['id', 'name', 'parentId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
@@ -92,7 +91,7 @@ test('folderList: Should return folder count', assert => {
     }
   };
 
-  model.get(["folderList", "length"])
+  model.get(['folderList', 'length'])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
@@ -103,19 +102,19 @@ test('folderList: Should return folder with subfolders', assert => {
   assert.plan(1);
   const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
-    "folderList": {
-      "0": {
-        "name": "root folder",
-        "folders": {
-          "0": {
-            "id": 2,
-            "name": "folder1",
-            "parentId": 1
+    'folderList': {
+      '0': {
+        'name': 'root folder',
+        'folders': {
+          '0': {
+            'id': 2,
+            'name': 'folder1',
+            'parentId': 1
           },
-          "1": {
-            "id": 3,
-            "name": "folder2",
-            "parentId": 1
+          '1': {
+            'id': 3,
+            'name': 'folder2',
+            'parentId': 1
           }
         }
       }
@@ -123,8 +122,8 @@ test('folderList: Should return folder with subfolders', assert => {
   };
 
   model.get(
-    ["folderList", 0, "name"],
-    ["folderList", 0, "folders", {"to": 1}, ["id", "name", "parentId"]]
+    ['folderList', 0, 'name'],
+    ['folderList', 0, 'folders', {'to': 1}, ['id', 'name', 'parentId']]
   )
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);

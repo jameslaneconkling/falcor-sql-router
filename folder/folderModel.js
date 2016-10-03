@@ -4,7 +4,7 @@ const {
   range2LimitOffset
 } = require('../utils/falcor');
 
-handleError = (observer, err) => {
+const handleError = (observer, err) => {
   if (process.env.NODE_ENV !== 'test') {
     console.error(err);
   }
@@ -127,7 +127,7 @@ module.exports = db => {
      */
     deleteByIds(ids) {
       return Rx.Observable.create(observer => {
-        db.run(`DELETE FROM folder WHERE id IN (${ids.join(', ')})`, [], (err, rows) => {
+        db.run(`DELETE FROM folder WHERE id IN (${ids.join(', ')})`, [], (err) => {
           if (err) {
             return handleError(observer, err);
           }
@@ -145,7 +145,7 @@ module.exports = db => {
      */
     getCount() {
       return Rx.Observable.create(observer => {
-        db.get(`SELECT count(*) as count FROM folder`, [], (err, row) => {
+        db.get('SELECT count(*) as count FROM folder', [], (err, row) => {
           if (err) {
             return handleError(observer, err);
           }
@@ -204,20 +204,20 @@ module.exports = db => {
                 JOIN folder as child
                 ON parent.id = child.parentId
                 LIMIT ${limit} OFFSET ${offset}`, [], (err, rows) => {
-          if (err) {
-            return handleError(observer, err);
-          }
+                  if (err) {
+                    return handleError(observer, err);
+                  }
 
-          range2List(range).forEach(idx => {
-            observer.onNext({
-              idx,
-              parentId,
-              row: rows[idx]
-            });
-          });
+                  range2List(range).forEach(idx => {
+                    observer.onNext({
+                      idx,
+                      parentId,
+                      row: rows[idx]
+                    });
+                  });
 
-          observer.onCompleted();
-        });
+                  observer.onCompleted();
+                });
       });
     },
 

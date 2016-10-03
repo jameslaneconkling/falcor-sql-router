@@ -1,5 +1,4 @@
 const falcor = require('falcor');
-const Rx = require('rx');
 const ResourceModelConstructor = require('../resource/resourceModel');
 const $ref = falcor.Model.ref;
 
@@ -9,7 +8,7 @@ module.exports = db => {
   return [
     // GET Resources from resourceList by index
     {
-      route: "resourceList[{ranges:ranges}]",
+      route: 'resourceList[{ranges:ranges}]',
       get(pathSet) {
         const ranges = pathSet.ranges;
 
@@ -33,8 +32,8 @@ module.exports = db => {
     },
     // GET Resources Length
     {
-      route: "resourceList.length",
-      get(pathSet) {
+      route: 'resourceList.length',
+      get() {
         return Resource.getCount()
           .map(count => {
             // return pathValue count

@@ -4,9 +4,7 @@ const Router = require('falcor-router');
 module.exports = (db) => {
   const BaseRouter = Router.createClass([
     ...require('./foldersById')(db),
-    ...require('./foldersById-optimized')(db),
     ...require('./folderList')(db),
-    ...require('./folderList-optimized')(db),
     ...require('./resourcesById')(db),
     ...require('./resourceList')(db)
   ]);

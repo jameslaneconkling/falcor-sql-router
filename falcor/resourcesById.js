@@ -1,7 +1,5 @@
-const falcor = require('falcor');
 const Rx = require('rx');
 const ResourceModelConstructor = require('../resource/resourceModel');
-const $ref = falcor.Model.ref;
 
 module.exports = db => {
   const Resource = ResourceModelConstructor(db);
@@ -9,7 +7,7 @@ module.exports = db => {
   return [
     // GET SET Resources by IDs
     {
-      route: "resourcesById[{keys:ids}][{keys:fields}]",
+      route: 'resourcesById[{keys:ids}][{keys:fields}]',
       get(pathSet) {
         const resourceSource = Resource.getByIds(pathSet.ids, pathSet.fields);
 
