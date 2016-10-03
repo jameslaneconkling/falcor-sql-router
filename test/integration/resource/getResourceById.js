@@ -1,11 +1,11 @@
 const test = require('tape');
 const request = require('supertest');
-const dbConstructor = require('../db');
+const dbConstructor = require('../../../db');
 const {
   setupFalcorTestModel
-} = require('./utils/test-utils');
+} = require('../../utils/test-utils');
 
-const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
+const seedFilePath = `${__dirname}/../../../db/sql/seed.sql`;
 const assertFailure = assert => err => {
   assert.fail(err);
   assert.end();

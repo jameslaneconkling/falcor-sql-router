@@ -1,8 +1,8 @@
-require('./getFolderById');
-require('./setFolderById');
-require('./callFolderById');
-require('./getFolderList');
-require('./setFolderList');
-require('./callFolderList');
-require('./getResourceById');
-require('./setResourceById');
+require('./integration/folder/getFolderById');
+require('./integration/folder/setFolderById');
+require('./integration/folder/callFolderById');
+require('./integration/folder/getFolderList');
+require('./integration/folder/setFolderList');
+require('./integration/folder/callFolderList');
+require('./integration/resource/getResourceById');
+require('./integration/resource/setResourceById');
