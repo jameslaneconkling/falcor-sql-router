@@ -5,3 +5,4 @@ require('./getFolderList');
 require('./setFolderList');
 require('./callFolderList');
 require('./getResourceById');
+require('./setResourceById');
