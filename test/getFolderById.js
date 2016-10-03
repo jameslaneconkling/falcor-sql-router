@@ -1,5 +1,4 @@
 const test = require('tape');
-const request = require('supertest');
 const dbConstructor = require('../db');
 const {
   setupFalcorTestModel
@@ -10,6 +9,7 @@ const assertFailure = assert => err => {
   assert.fail(err);
   assert.end();
 };
+
 
 test('foldersById: Should return folders with ID 1, 3, and 4', assert => {
   assert.plan(1);

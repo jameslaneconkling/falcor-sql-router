@@ -3,16 +3,22 @@ const request = require('supertest');
 const falcor = require('falcor');
 const dbConstructor = require('../db');
 const appConstructor = require('../app');
-const SuperTestDataSource = require('./utils/SuperTestDataSource');
+const {
+  setupFalcorTestModel
+} = require('./utils/test-utils');
+
 const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
+const assertFailure = assert => err => {
+  assert.fail(err);
+  assert.end();
+};
 
 /*******************************/
 /** Test against Falcor Model **/
 /*******************************/
 test('Example Test against Falcor Model- folderList: Should return folders from beginning of list', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
 
   const expectedResponse = {
     folderList: {
@@ -29,10 +35,6 @@ test('Example Test against Falcor Model- folderList: Should return folders from 
     }
   };
 
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
-
   model.get(["folderList", {"to": 1}, ["id", "name", "parentId"]])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
@@ -44,8 +46,7 @@ test('Example Test against Falcor Model- folderList: Should return folders from 
 
 test('Example Test against Falcor Model- foldersById: Should return folders with ID 1, 3, and 4', assert => {
   assert.plan(1);
-  const db = dbConstructor({seed: seedFilePath});
-  const app = appConstructor(db);
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
 
   const expectedResponse = {
     "foldersById": {
@@ -66,10 +67,6 @@ test('Example Test against Falcor Model- foldersById: Should return folders with
       }
     }
   };
-
-  const model = new falcor.Model({
-    source: new SuperTestDataSource('/api/model.json', app)
-  });
 
   model.get(["foldersById", [1, 3, 4], ["id", "name", "parentId"]])
     .subscribe(res => {
@@ -165,4 +162,70 @@ test('Example Test as ajax request - foldersById: Should return folders with ID 
 
       assert.deepEqual(res.body, expectedResponse);
     });
+});
+
+
+/*********************************/
+/** Test set w/ pathValue       **/
+/*********************************/
+test('foldersById: Should update folder name with a pathSet', assert => {
+  assert.plan(2);
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
+  const expectedResponse = {
+    foldersById: {
+      2: {
+        name: 'folder1 edit1'
+      }
+    }
+  };
+
+  model.set({
+    path: ['foldersById', 2, 'name'],
+    value: 'folder1 edit1'
+  })
+    .subscribe(res => {
+      assert.deepEqual(res.json, expectedResponse, 'set returns updated value');
+
+      // clear client cache, to ensure subsequent tests run against server db
+      model.setCache({});
+
+      model.getValue(['foldersById', 2, 'name'])
+        .subscribe(name => {
+          assert.equal(name, 'folder1 edit1', 'updated value is persisted');
+        });
+    }, assertFailure(assert));
+});
+
+
+/*********************************/
+/** Test set w/ jsonGraphEnvelope*/
+/*********************************/
+test('foldersById: Should update folder name with a jsonGraphEnvelope', assert => {
+  assert.plan(2);
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
+  const expectedResponse = {
+    foldersById: {
+      2: {
+        name: 'folder1 edit2'
+      }
+    }
+  };
+
+  model.set({
+    "jsonGraph": {
+      "foldersById": {2: {"name": "folder1 edit2"}}
+    },
+    "paths": [["foldersById", 2, "name"]]
+  })
+    .subscribe(res => {
+      assert.deepEqual(res.json, expectedResponse, 'set returns updated value');
+
+      // clear client cache, to ensure subsequent tests run against server db
+      model.setCache({});
+
+      model.getValue(['foldersById', 2, 'name'])
+        .subscribe(name => {
+          assert.equal(name, 'folder1 edit2', 'updated value is persisted');
+        });
+    }, assertFailure(assert));
 });
