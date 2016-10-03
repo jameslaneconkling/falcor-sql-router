@@ -40,3 +40,19 @@ test('resourcesById: Should return resources with ID 1, 4, and 5', assert => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
 });
+
+
+test('resourcesById: Should return null for resource that doesn\'t exist', assert => {
+  assert.plan(1);
+  const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
+  const expectedResponse = {
+    "resourcesById": {
+      "nope": null
+    }
+  };
+
+  model.get(["resourcesById", "nope", ["id", "name", "folderId"]])
+    .subscribe(res => {
+      assert.deepEqual(res.json, expectedResponse);
+    }, assertFailure(assert));
+});
