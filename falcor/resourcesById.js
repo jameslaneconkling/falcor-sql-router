@@ -47,5 +47,49 @@ module.exports = db => {
           });
       }
     },
+    // CREATE Resource
+    {
+      route: 'resourcesById.createResource',
+      call(callPath, args) {
+        const newResources = args;
+
+        return Rx.Observable.from(newResources)
+          .flatMap(resource => {
+            // create resource
+            return Resource.create(resource.name, resource.folderId);
+          })
+          .map(resource => {
+            const resourcePathValues = Object.keys(resource).map(field => ({
+              path: ['resourcesById', resource.id, field],
+              value: resource[field]
+            }));
+
+            const resourceCollectionLengthPathValue = {
+              path: ['resourceList', 'length'],
+              invalidated: true
+            };
+
+            return [...resourcePathValues, resourceCollectionLengthPathValue];
+          });
+      }
+    },
+    // DELETE Resources by ID [implicit]
+    {
+      route: 'resourcesById[{keys:ids}].delete',
+      call(callPath) {
+        // resourceList is treated as an implicit dependency, so invalidation must be handled by client
+        return Resource.deleteByIds(callPath.ids)
+          .map(id => ([
+            {
+              path: ['resourcesById', id],
+              value: null
+            },
+            {
+              path: ['resourceList', 'length'],
+              invalidated: true
+            }
+          ]));
+      }
+    }
   ];
 };

@@ -103,6 +103,42 @@ module.exports = db => {
     },
 
     /**
+     * CREATE resource
+     */
+    create(name, folderId) {
+      return Rx.Observable.create(observer => {
+        // create resource
+        db.run(`INSERT INTO resource (name, folderId) VALUES ('${name}', '${folderId}')`, [], function(err) {
+          if (err) {
+            return handleError(observer, err);
+          }
+
+          observer.onNext({id: this.lastID, name, folderId});
+          observer.onCompleted();
+        });
+      });
+    },
+
+    /**
+     * Delete resources by id
+     *
+     * @param {Array} ids
+     * @return {Observable}
+     */
+    deleteByIds(ids) {
+      return Rx.Observable.create(observer => {
+        db.run(`DELETE FROM resource WHERE id IN (${ids.join(', ')})`, [], (err) => {
+          if (err) {
+            return handleError(observer, err);
+          }
+
+          ids.forEach(id => observer.onNext(id));
+          observer.onCompleted();
+        });
+      });
+    },
+
+    /**
      * SET resource props
      *
      * @param {String} id
