@@ -27,7 +27,7 @@ Database is initialized and seeded automatically.
 To reinitialize the db, bounce the server.
 
 ### Test
-If not globally installed, install faucet
+If not globally installed, install tap-summary
 ```bash
 npm install -g tap-summary
 ```

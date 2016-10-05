@@ -1,3 +1,5 @@
+If falcor can model RDF, then it can abstract over a number of RDF datasources, allowing a client to transparently query across multiple, potentially interlinked, dataset without having to handle the complex logic of munging data between different domains
+
 ---------------
 TYPOLOGY
 ---------------
@@ -24,6 +26,7 @@ Links:
 * queries must start w/ a collection, and end with a predicate:  Person[id].name or People[range].name
   * you can ask "what is the average age of Group", or "what is PersonX's age"
   * you can't ask "what is Group", or "what is PersonX"
+    * but you could potentially ask the more precise questions "give me a summar of PersonX" or "give me schema metadata on PersonX"
 * queries resolve to 1+ nodes
 * fragments of queries can resolve to 1+ nodes
 * nodes don't actually appear in queries, but are represented by queries/query fragments
@@ -76,14 +79,16 @@ ROUTER
 
 
 # Minimum routes
-* get tableById[{keys:idx}][{keys:fields}]
-* set tableById[{keys:idx}][{keys:fields}]
-* get tableById[{keys:idx}].contains[{integers:indices}]
-  * redirect to tableById
-* get tableById[{keys:idx}].contains.length
-* get tableList[{integers:indices}]
-  * redirect to tableById
-* get tableList.length
+* get/set mapCollection[{keys:idx}][{keys:valueFields}]
+* get mapCollection[{keys:idx}][{keys:fields}]
+* get/set mapCollection[{keys:idx}][{keys:refFields}][{range:indices}][{keys:fields}]
+  * either a virtualField (e.g. length) or refField (e.g. Person.brothers.0.homeTown.name) or a literalField (Person.brothers.favoriteMusic, but maybe a literalValue on a list is a bad idea)
+  * how to differentiate between a valueField and a listField?
+    * either create a convention, e.g. prepend 'contains': Person.contains.brothers.0.contains.homeTown
+    * or allow nodes to resolve to their label: Person.brothers.0 === Person.brothers.0.label
+    * or allow introspection along the way: Person.brothers.schema -> {$type: 'atom', fieldType: 'refField', label: 'brother', comment: 'someone\'s brother', type: 'predicate'}
+* get listCollection[{range:indices}][{keys:fields}]
+  * how to differentiate b/t listCollection and mapCollection?  introspection?
 
 
 
@@ -150,6 +155,7 @@ node list collection queries _could_ handle
   * see graphQL swapi: http://graphql-swapi.parseapp.com/
   * node gets description, fieldList
   * field gets description, type/typeList
+* isn't there a REST equivalent for defining meta endpoints that describe what other endpoints are available
 
 
 
@@ -182,6 +188,8 @@ The Falcor-Router accomplishes both.  However, in cases where the backend is sim
 However
 * some of the routes will necessarily be expensive.
   * E.g. how do you efficiently query "for folders x and y, get the name and id of the 5 - 10 subfolders of each", or as a path ['folder', ['x', 'y'], 'folders', {from:5, to:10}, ['id', 'name']]
+* this would act like an ORM, mapping jsonGraph to SQL statements, but likely suffering from the inflexibility that all ORMs suffer from
+  * routes could guarantee that properly-formed jsonGraph queries would be translated into equivalent SQL queries, but not that they would translate to the most efficient queries
 
 ### Needs
 * sanitize input
