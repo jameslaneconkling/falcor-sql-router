@@ -71,7 +71,7 @@ module.exports = class SuperTestDataSource {
     });
   }
 
-  call(callPath, args, refPath, thisPath) {
+  call(callPath, args, refPaths, thisPaths) {
     return Rx.Observable.create(observer => {
       request(this.app)
         .post(this.url)
@@ -80,8 +80,8 @@ module.exports = class SuperTestDataSource {
           method: 'call',
           callPath: JSON.stringify(callPath),
           arguments: JSON.stringify(args),
-          pathSuffixes: JSON.stringify(refPath),
-          paths: JSON.stringify(thisPath)
+          pathSuffixes: JSON.stringify(refPaths),
+          paths: JSON.stringify(thisPaths)
         })
         .end((err, res) => {
           if (err) {
