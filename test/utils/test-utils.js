@@ -1,6 +1,6 @@
 const request = require('supertest');
 const falcor = require('falcor');
-const SuperTestDataSource = require('./superTestDataSource');
+const SuperTestDataSource = require('falcor-supertest-datasource');
 
 exports.setupFalcorTestModel = db => {
   const app = require('../../app')(db);

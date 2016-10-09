@@ -35,6 +35,7 @@
     "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master"
   },
   "devDependencies": {
+    "falcor-supertest-datasource": "^1.0.1",
     "supertest": "^2.0.0",
     "tape": "^4.6.0"
   }
