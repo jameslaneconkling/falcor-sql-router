@@ -1,12 +1,12 @@
 const test = require('tape');
 const request = require('supertest');
-const dbConstructor = require('../db');
-const appConstructor = require('../app');
+const dbConstructor = require('../../db');
+const appConstructor = require('../../app');
 const {
   setupFalcorTestModel
-} = require('./utils/test-utils');
+} = require('../utils/test-utils');
 
-const seedFilePath = `${__dirname}/../db/sql/seed.sql`;
+const seedFilePath = `${__dirname}/../../db/sql/seed.sql`;
 const assertFailure = assert => err => {
   assert.fail(err);
   assert.end();
@@ -37,9 +37,7 @@ test('Example Test against Falcor Model- folderList: Should return folders from 
   model.get(['folderList', {'to': 1}, ['id', 'name', 'parentId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure);
 });
 
 
@@ -70,9 +68,7 @@ test('Example Test against Falcor Model- foldersById: Should return folders with
   model.get(['foldersById', [1, 3, 4], ['id', 'name', 'parentId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
-    }, err => {
-      assert.fail(err);
-    });
+    }, assertFailure);
 });
 
 
