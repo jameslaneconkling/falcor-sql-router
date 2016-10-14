@@ -24,14 +24,12 @@ module.exports = db => {
         // break rows down into fields and convert each into a pathValue
         const pathValues = foldersSource
           .filter(data => data.row)
-          .reduce((accumulator, data) => {
-            const pathValuesByField = Object.keys(data.row).map(field => ({
+          .map(data => {
+            return Object.keys(data.row).map(field => ({
               path: ['foldersById', data.id, field],
               value: data.row[field]
             }));
-
-            return [...accumulator, ...pathValuesByField];
-          }, []);
+          });
 
         return Rx.Observable.merge(nullPathValues, pathValues);
       },
