@@ -35,13 +35,10 @@ module.exports = db => {
       route: 'folderList.length',
       get() {
         return Folder.getCount()
-          .map(count => {
-            // return pathValue count
-            return {
-              path: ['folderList', 'length'],
-              value: count
-            };
-          });
+          .map(count => ({
+            path: ['folderList', 'length'],
+            value: count
+          }));
       }
     }
   ];

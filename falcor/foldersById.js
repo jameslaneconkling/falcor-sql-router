@@ -39,12 +39,10 @@ module.exports = db => {
 
         return Rx.Observable.from(ids)
           .flatMap(id => Folder.setRow(id, folders[id]))
-          .map(data => {
-            return {
-              path: ['foldersById', data.id, data.field],
-              value: data.value
-            };
-          });
+          .map(data => ({
+            path: ['foldersById', data.id, data.field],
+            value: data.value
+          }));
       }
     },
     // GET Subfolders from folders
@@ -55,7 +53,7 @@ module.exports = db => {
         const childRanges = pathSet.childRanges;
 
         return Rx.Observable.from(parentIds)
-          .concatMap(parentId => Folder.getSubfoldersByRanges(parentId, childRanges))
+          .flatMap(parentId => Folder.getSubfoldersByRanges(parentId, childRanges))
           .map(data => {
             // if row doesn't exist, return null pathValue
             if (!data.row) {
@@ -80,14 +78,11 @@ module.exports = db => {
         const parentIds = pathSet.parentIds;
 
         return Rx.Observable.from(parentIds)
-          .concatMap(Folder.getSubfolderCount)
-          .map(data => {
-            // return pathValue count
-            return {
-              path: ['foldersById', data.parentId, 'folders', 'length'],
-              value: data.count
-            };
-          });
+          .flatMap(Folder.getSubfolderCount)
+          .map(data => ({
+            path: ['foldersById', data.parentId, 'folders', 'length'],
+            value: data.count
+          }));
       }
     },
     // CREATE Folder
@@ -109,21 +104,15 @@ module.exports = db => {
             // get new count of parent folder's subfolders
             return Folder.getSubfolderCount(folder.parentId).map(data => Object.assign(folder, {parentSubFolderCount: data.count}));
           })
-          .map(folder => {
-            // return pathValue ref linking parentFolder to new folder
-            // TODO - this assumes the new folder is inserted at the end of the parentFolder.folders list
-            const folderPathValue = {
-              path: ['foldersById', folder.parentId, 'folders', folder.parentSubFolderCount -1],
-              value: $ref(['foldersById', folder.id])
-            };
-
-            const folderCollectionLengthPathValue = {
-              path: ['folderList', 'length'],
-              invalidated: true
-            };
-
-            return [folderPathValue, folderCollectionLengthPathValue];
-          });
+          // TODO - this assumes the new folder is inserted at the end of the parentFolder.folders list
+          .map(folder => ({
+            path: ['foldersById', folder.parentId, 'folders', folder.parentSubFolderCount -1],
+            value: $ref(['foldersById', folder.id])
+          }))
+          .concat(Rx.Observable.just({
+            path: ['folderList', 'length'],
+            invalidated: true
+          }));
       }
     },
     // DELETE Folders by ID [implicit]
@@ -132,16 +121,14 @@ module.exports = db => {
       call(callPath) {
         // foldersList is treated as an implicit dependency, so invalidation must be handled by client
         return Folder.deleteByIds(callPath.ids)
-          .map(id => ([
-            {
-              path: ['foldersById', id],
-              value: null
-            },
-            {
-              path: ['folderList', 'length'],
-              invalidated: true
-            }
-          ]));
+          .map(id => ({
+            path: ['foldersById', id],
+            value: null
+          }))
+          .concat(Rx.Observable.just({
+            path: ['folderList', 'length'],
+            invalidated: true
+          }));
       }
     }
   ];

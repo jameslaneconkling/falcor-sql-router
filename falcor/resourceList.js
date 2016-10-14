@@ -35,13 +35,10 @@ module.exports = db => {
       route: 'resourceList.length',
       get() {
         return Resource.getCount()
-          .map(count => {
-            // return pathValue count
-            return {
-              path: ['resourceList', 'length'],
-              value: count
-            };
-          });
+          .map(count => ({
+            path: ['resourceList', 'length'],
+            value: count
+          }));
       }
     }
   ];
