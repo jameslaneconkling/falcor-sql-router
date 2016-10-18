@@ -1,3 +1,5 @@
+const dbConstructor = require('./db');
+const appConstructor = require('./app');
 const port = process.env.PORT || 3000;
 
 let dbConfig;
@@ -13,9 +15,12 @@ if (process.env.NODE_ENV === 'production') {
   };
 }
 
-const db = require('./db')(dbConfig);
-const app = require('./app')(db);
+const db = dbConstructor(dbConfig);
+const app = appConstructor(db);
 
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
+
+exports.db = dbConstructor;
+exports.app = appConstructor;
