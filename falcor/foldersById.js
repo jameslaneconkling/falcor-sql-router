@@ -2,6 +2,7 @@ const falcor = require('falcor');
 const Rx = require('rx');
 const FolderModelConstructor = require('../folder/folderModel');
 const $ref = falcor.Model.ref;
+const $error = falcor.Model.error;
 
 module.exports = db => {
   const Folder = FolderModelConstructor(db);
@@ -18,8 +19,15 @@ module.exports = db => {
           .filter(data => !data.row)
           .map(data => ({
             path: ['foldersById', data.id],
-            value: null
+            value: $error(`folder '${data.id}' does not exist`)
           }));
+
+        // types of null nodes
+        // * value doesn't exist
+        // * node doesn't exist
+        // * error retrieving
+        // * value is null
+        // * ...
 
         // break rows down into fields and convert each into a pathValue
         const pathValues = foldersSource
@@ -123,7 +131,7 @@ module.exports = db => {
         return Folder.deleteByIds(callPath.ids)
           .map(id => ({
             path: ['foldersById', id],
-            value: null
+            invalidated: true
           }))
           .concat(Rx.Observable.just({
             path: ['folderList', 'length'],

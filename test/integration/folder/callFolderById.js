@@ -91,34 +91,21 @@ test('foldersById: Should delete multiple folders', assert => {
   const args = [];
   const refPaths = [];
   const thisPath = [];
-  const expectedResponse = {
-    foldersById: {
-      2: null,
-      3: null
-    }
-  };
 
-  Rx.Observable.just(null)
-    .flatMap(() => {
-      // prerequest dependent properties, so later we can test that they were invalidated
-      return model.get(
-        ['folderList', 'length'],
-        ['foldersById', 1, 'folders', 'length']
-      );
-    })
+  // prerequest dependent properties, so later we can test that they were invalidated
+  model.get(['folderList', 'length'])
     .flatMap(() => {
       return model.call([...callPath, 'delete'], args, refPaths, thisPath);
     })
-    .map(res => {
-      assert.deepEqual(res.json, expectedResponse);
-
+    .subscribe(noop, noop, () => {
+      // foldeList.length is an explicit dependency
       assert.equal(
         R.path(['folderList', 'length'], model.getCache(['folderList', 'length'])),
         undefined,
         'folderList count is invalidated'
       );
 
-      // currently handled as an implicit dependency, so invalidation handled by client
+      // folder.folders.length is an implicit depdency, so not handled by server response
       // assert.equal(
       //   R.path(['foldersById', 1, 'folders', 'length'], model.getCache(['foldersById', 1, 'folders', 'length'])),
       //   undefined,
@@ -130,14 +117,13 @@ test('foldersById: Should delete multiple folders', assert => {
         .subscribe(res => {
           assert.deepEqual(res.json, {
             foldersById: {
-              2: null,
-              3: null,
               4: {id: 4}
             }
-          }, 'folders are properly removed from graph');
-        }, assertFailure(assert));
-    })
-    .subscribe(noop, assertFailure(assert));
+          }, 'folders 2 and 3 are properly removed from graph');
+        }, err => {
+          assert.equal(err.length, 2, 'folders are returned as an error node');
+        });
+    });
 });
 
 

@@ -41,16 +41,16 @@ test('foldersById: Should return folders with ID 1, 3, and 4', assert => {
 });
 
 
-test('foldersById: Should return null for folder that doesn\'t exist', assert => {
+test('foldersById: Should return error node for folder that doesn\'t exist', assert => {
   assert.plan(1);
   const model = setupFalcorTestModel(dbConstructor({seed: seedFilePath}));
   const expectedResponse = {
     'foldersById': {
-      'nope': null
+      nope: 'folder \'nope\' does not exist'
     }
   };
 
-  model.get(['foldersById', 'nope', ['id', 'name', 'parentId']])
+  model.treatErrorsAsValues().get(['foldersById', 'nope', ['id', 'name', 'parentId']])
     .subscribe(res => {
       assert.deepEqual(res.json, expectedResponse);
     }, assertFailure(assert));
