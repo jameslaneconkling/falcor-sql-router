@@ -3,7 +3,7 @@ If falcor can model RDF, then it can abstract over a number of RDF datasources, 
 ---------------
 TYPOLOGY
 ---------------
-# Types of PathSets [pathset typologies]
+# Graph Entities
 Nodes:
 * resource:            a node that can have 1+ properties
 * literalValue:        a node with a single value and an optional $type
@@ -11,8 +11,12 @@ Nodes:
 
 Collection:
 * collection:        a collection of 0+ nodes, and 0+ properties
-  * map collection   a collection of ids
-  * list collection  a collection of indices
+  * collection range types:
+    * map collection   a collection of ids
+    * list collection  a collection of indices
+  * collection positions:
+    * top-level        link to all data across entire dataset (e.g. personList or persons)
+    * relative         link to data relative to a specific domain (e.g. persons.id.brothers)
 * collectionQuery    a filter and/or sort operation on collection
 
 Links:
@@ -22,7 +26,8 @@ Links:
 * ids:                 1+ links from a map collection to 1 property (node)
 
 
-### Typology
+### Pathset Typology
+* PathSets are queries that walk a graph in order to return a value (resource, literalValue, virtualValue)
 * queries must start w/ a collection, and end with a predicate:  Person[id].name or People[range].name
   * you can ask "what is the average age of Group", or "what is PersonX's age"
   * you can't ask "what is Group", or "what is PersonX"
@@ -213,3 +218,55 @@ However
 
 # RivREST
 * falcor queryParmas/request body is not getting properly URLEncoded
+
+
+
+
+
+# IMPLICIT INVALIDATION
+{
+  id: {
+    A: $atom
+    B: $atom
+  },
+  list: {
+    0: $ref([id, A]),
+    1: $ref([id, B])
+  }
+}
+
+// DELETE A
+
+{
+  id: {
+    // invalidated
+    B: $atom
+  },
+  list: {
+    0: $ref([id, A]),
+    1: $ref([id, B])
+  }
+}
+
+// GET LIST
+  // triggers GET id.A, even though we know it doesn't exist (req #2)
+
+list {
+  0: $error
+  1: B
+}
+
+  // Rx stream's catch handler invalidates [0..length] and all virtual fields ['length']
+  // which prompts request for GET list[0..1] (req #3)
+{
+  id: {
+    B: $atom
+    C: $atom
+  },
+  list: {
+    0: $ref([id, B]),
+    1: $ref([id, C])
+  }
+}
+
+
